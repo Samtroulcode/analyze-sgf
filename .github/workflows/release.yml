@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Resolve version
+        id: meta
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build binaries
+        run: npx --yes @yao-pkg/pkg . --out-path bin
+
+      - name: Import Developer ID certificate
+        # 시크릿이 비어 있으면 ad-hoc 서명으로 폴백 (포크/PR에서도 빌드만 가능하도록).
+        env:
+          DEV_ID_CERT_BASE64:  ${{ secrets.DEV_ID_CERT_BASE64 }}
+          DEV_ID_CERT_PASSWORD: ${{ secrets.DEV_ID_CERT_PASSWORD }}
+          KEYCHAIN_PASSWORD:   ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -e
+          if [ -z "$DEV_ID_CERT_BASE64" ]; then
+            echo "developer_id_available=false" >> "$GITHUB_ENV"
+            echo "Developer ID cert secret 없음. ad-hoc 서명으로 폴백."
+            exit 0
+          fi
+          echo "$DEV_ID_CERT_BASE64" | base64 -d > /tmp/cert.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security list-keychains -d user -s build.keychain login.keychain
+          security default-keychain -s build.keychain
+          security import /tmp/cert.p12 -k build.keychain \
+            -P "$DEV_ID_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          rm -f /tmp/cert.p12
+          echo "developer_id_available=true" >> "$GITHUB_ENV"
+
+      - name: Sign macOS binaries
+        env:
+          DEV_ID_IDENTITY: ${{ secrets.DEV_ID_IDENTITY }}
+        run: |
+          set -e
+          if [ "${developer_id_available:-false}" = "true" ]; then
+            for arch in arm64 x64; do
+              codesign --sign "$DEV_ID_IDENTITY" --force \
+                --options runtime --timestamp \
+                --entitlements .github/entitlements.plist \
+                "bin/analyze-sgf-macos-$arch"
+            done
+          else
+            codesign --sign - --force bin/analyze-sgf-macos-arm64
+          fi
+
+      - name: Notarize macOS binaries
+        if: env.developer_id_available == 'true'
+        env:
+          APPLE_ID:           ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID:      ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          set -e
+          for arch in arm64 x64; do
+            tmp=/tmp/notarize-$arch.zip
+            ditto -c -k --keepParent "bin/analyze-sgf-macos-$arch" "$tmp"
+            xcrun notarytool submit "$tmp" \
+              --apple-id "$APPLE_ID" \
+              --team-id "$APPLE_TEAM_ID" \
+              --password "$APPLE_APP_PASSWORD" \
+              --wait
+            rm -f "$tmp"
+          done
+
+      - name: Package zips
+        working-directory: bin
+        env:
+          V: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          rename_and_zip() {
+            local src=$1 target=$2 ext=${3:-}
+            mv "$src" "analyze-sgf${ext}"
+            zip "analyze-sgf-${V}-${target}${ext}.zip" "analyze-sgf${ext}"
+            rm "analyze-sgf${ext}"
+          }
+          rename_and_zip analyze-sgf-linux-x64    linux-x64
+          rename_and_zip analyze-sgf-macos-arm64  macos-arm64
+          rename_and_zip analyze-sgf-macos-x64    macos-x64
+          rename_and_zip analyze-sgf-win-x64.exe  win-x64 .exe
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          V: ${{ steps.meta.outputs.version }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "analyze-sgf ${GITHUB_REF_NAME}" \
+            --notes "윈도우, 맥, 리눅스에서 각각 실행되는 바이너리 파일입니다. [@yao-pkg/pkg](https://github.com/yao-pkg/pkg)로 만들었습니다. macOS 바이너리는 Developer ID로 서명되고 Apple notarization을 통과했습니다." \
+            "bin/analyze-sgf-${V}-linux-x64.zip" \
+            "bin/analyze-sgf-${V}-macos-arm64.zip" \
+            "bin/analyze-sgf-${V}-macos-x64.zip" \
+            "bin/analyze-sgf-${V}-win-x64.exe.zip"
