@@ -242,7 +242,20 @@ describe('Node SGF annotations', () => {
     assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
   });
 
-  it('should not mark compact inaccuracies as bad moves.', () => {
+  it('should mark compact great moves as interesting.', () => {
+    const node = new Node(';B[aa]');
+
+    node.setWinrate(
+      { winrate: 0.5, scoreLead: 0, visits: 1000 },
+      { winrate: 0.49, scoreLead: -0.4, visits: 1000 },
+      compactOpts('en'),
+    );
+
+    assert.equal(node.classification.category, 'great');
+    assert.equal(node.node, ';B[aa]IT[1]SBKV[49.00]');
+  });
+
+  it('should mark compact inaccuracies as doubtful.', () => {
     const node = new Node(';B[aa]');
 
     node.setWinrate(
@@ -252,7 +265,7 @@ describe('Node SGF annotations', () => {
     );
 
     assert.equal(node.classification.category, 'inaccuracy');
-    assert.equal(node.node, ';B[aa]SBKV[69.00]');
+    assert.equal(node.node, ';B[aa]DO[1]SBKV[69.00]');
   });
 
   it('should mark compact mistakes from score-based classification.', () => {

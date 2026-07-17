@@ -166,6 +166,10 @@ function setClassificationAnnotations(that) {
 
   if (category === 'best' || category === 'excellent') {
     that.node = sgfconv.toGoodNode(that.node);
+  } else if (category === 'great') {
+    that.node = sgfconv.toInterestingNode(that.node);
+  } else if (category === 'inaccuracy') {
+    that.node = sgfconv.toDoubtfulNode(that.node);
   } else if (category === 'blunder') {
     that.node = sgfconv.toBadHotSpot(that.node);
   } else if (category === 'mistake') {

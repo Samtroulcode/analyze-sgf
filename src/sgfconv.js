@@ -2,6 +2,8 @@
  * @fileOverview Helper functions to parse SGF format.
  */
 
+/* eslint max-lines: ["error", 260] */
+
 const sgfparser = require('@sabaki/sgf');
 
 // 'I' => 'J'
@@ -56,6 +58,15 @@ function addProperty(seq, mark, index) {
 
 // ('(;W[aa];B[bb];W[cc])', 0) => '(;W[aa]TE[1];B[bb];W[cc])'
 const toGoodNode = (seq, index = 0) => addProperty(seq, 'TE[1]', index);
+
+// ('(;W[aa];B[bb];W[cc])', 0)
+//   => '(;W[aa]IT[1];B[bb];W[cc])'
+const toInterestingNode = (seq, index = 0) =>
+  addProperty(seq, 'IT[1]', index);
+
+// ('(;W[aa];B[bb];W[cc])', 0)
+//   => '(;W[aa]DO[1];B[bb];W[cc])'
+const toDoubtfulNode = (seq, index = 0) => addProperty(seq, 'DO[1]', index);
 
 // ('(;W[aa];B[bb];W[cc])', 0) => '(;W[aa]BM[1];B[bb];W[cc])'
 const toBadNode = (seq, index = 0) => addProperty(seq, 'BM[1]', index);
@@ -213,6 +224,8 @@ module.exports = {
   iaToJ19,
   addProperty,
   toGoodNode,
+  toInterestingNode,
+  toDoubtfulNode,
   toBadNode,
   toBadHotSpot,
   addComment,

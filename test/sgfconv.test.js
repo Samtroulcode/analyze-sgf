@@ -93,11 +93,13 @@ describe('boardSizeFromRoot', () => {
   });
 });
 
-describe('toGoodNode/toBadNode/toBadHotSpot', () => {
+describe('node annotations', () => {
   const seq = '(;W[po];B[hm])';
   it('should be expected values.', () => {
     assert.equal(sgfconv.toGoodNode(seq, 0), '(;W[po]TE[1];B[hm])');
     assert.equal(sgfconv.toGoodNode(seq, 4), '(;W[po]TE[1];B[hm])');
+    assert.equal(sgfconv.toInterestingNode(seq), '(;W[po]IT[1];B[hm])');
+    assert.equal(sgfconv.toDoubtfulNode(seq), '(;W[po]DO[1];B[hm])');
     assert.equal(sgfconv.toBadNode(seq, 10), '(;W[po];B[hm]BM[1])');
     assert.equal(sgfconv.toBadHotSpot(seq), '(;W[po]BM[1]HO[1];B[hm])');
   });
