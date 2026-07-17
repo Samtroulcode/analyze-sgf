@@ -109,13 +109,19 @@ function parseArgs() {
 
 // Reads config and merges each key of it with args.
 function readConfig(kopts, aopts, sopts) {
+  const defaults = yaml.load(
+    fs.readFileSync(require.resolve('./analyze-sgf.yml')),
+  );
   const opts = yaml.load(fs.readFileSync(config));
 
-  const katago = { ...opts.katago, ...kopts };
-  const analysis = { ...opts.analysis, ...aopts };
-  const sgf = { ...opts.sgf, ...sopts };
-  const classification = { ...opts.classification };
-  const summary = { ...opts.summary };
+  const katago = { ...defaults.katago, ...opts.katago, ...kopts };
+  const analysis = { ...defaults.analysis, ...opts.analysis, ...aopts };
+  const sgf = { ...defaults.sgf, ...opts.sgf, ...sopts };
+  const classification = {
+    ...defaults.classification,
+    ...opts.classification,
+  };
+  const summary = { ...defaults.summary, ...opts.summary };
 
   sgf.analyzeTurns = analysis.analyzeTurns;
 

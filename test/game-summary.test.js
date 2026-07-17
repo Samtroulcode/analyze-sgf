@@ -36,14 +36,30 @@ function responses() {
 
 describe('game summary', () => {
   it('should render a compact root summary from classifications.', () => {
-    const gametree = new GameTree('(;B[aa];W[bb])', responses(), baseOpts);
+    const sgf =
+      '(;SZ[13]PB[Sammu]PW[bun_patty]KM[6.5]RE[B+R]' +
+      'DT[2024-07-09]RU[Japanese];B[aa];W[bb])';
+    const gametree = new GameTree(sgf, responses(), baseOpts);
     const report = gametree.getReport();
 
     assert(report.indexOf('# Review Summary') !== -1);
-    assert(report.indexOf('Black (1)\nBest: 1') !== -1);
-    assert(report.indexOf('White (1)\nInaccuracy: 1') !== -1);
+    assert(
+      report.indexOf('Players: Sammu (Black) vs bun_patty (White)') !== -1,
+    );
+    assert(report.indexOf('Rules: Japanese') !== -1);
+    assert(report.indexOf('Komi: 6.5') !== -1);
+    assert(report.indexOf('Board size: 13x13') !== -1);
+    assert(report.indexOf('Result: Black wins by resignation') !== -1);
+    assert(report.indexOf('Date: 2024-07-09') !== -1);
+    assert(report.indexOf('Sammu (Black) - 1\nBest: 1') !== -1);
+    assert(report.indexOf('bun_patty (White) - 1\nInaccuracy: 1') !== -1);
     assert(report.indexOf('Sum of estimated losses: 4.00 points') !== -1);
     assert(report.indexOf('#2 White - Inaccuracy - 4.00 points') !== -1);
+    assert(
+      report.indexOf(
+        'Analyzed by KataGo Parallel Analysis Engine (30 max visits).',
+      ) !== -1,
+    );
   });
 
   it('should keep legacy reports for legacy comments.', () => {
@@ -66,6 +82,7 @@ describe('game summary', () => {
     const report = gametree.getReport();
 
     assert(report.indexOf("# Résumé de l'analyse") !== -1);
-    assert(report.indexOf('Blanc (1)\nImprécision: 1') !== -1);
+    assert(report.indexOf('Joueurs: Noir (Noir) vs Blanc (Blanc)') !== -1);
+    assert(report.indexOf('Blanc (Blanc) - 1\nImprécision: 1') !== -1);
   });
 });
