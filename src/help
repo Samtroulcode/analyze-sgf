@@ -13,7 +13,9 @@ Examples:
   analyze-sgf baduk-1.sgf baduk-2.gib
   analyze-sgf 'https://www.cyberoro.com/gibo_new/giboviewer/......'
   analyze-sgf -a 'maxVisits:16400,analyzeTurns:[197,198]' baduk.sgf
+  analyze-sgf -s baduk.sgf
   analyze-sgf -f baduk.json
+  analyze-sgf -f -g 'commentStyle:"compact",language:"fr"' baduk.json
   analyze-sgf -g 'maxVariationsForEachMove:15' -r 20000 baduk.sgf
 
 Edit ~/.analyze-sgf.yml for default options

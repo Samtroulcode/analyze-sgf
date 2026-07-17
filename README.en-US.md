@@ -68,7 +68,9 @@ Examples:
   analyze-sgf baduk-1.sgf baduk-2.gib
   analyze-sgf 'https://www.cyberoro.com/gibo_new/giboviewer/......'
   analyze-sgf -a 'maxVisits:16400,analyzeTurns:[197,198]' baduk.sgf
+  analyze-sgf -s baduk.sgf
   analyze-sgf -f baduk.json
+  analyze-sgf -f -g 'commentStyle:"compact",language:"fr"' baduk.json
   analyze-sgf -g 'maxVariationsForEachMove:15' -r 20000 baduk.sgf
 
 Edit ~/.analyze-sgf.yml for default options
@@ -190,6 +192,20 @@ The comment of each move contains information about win rate and score,
 whether it matches KataGo move suggestions, as well as links to the moves with
 huge win rate drop, so you can quickly analyze your game.
 
+By default, `commentStyle` is `"legacy"`, which keeps this original technical
+report. For a more readable review, use `commentStyle:"compact"`. Compact
+comments add localized move classifications, a readable root summary, estimated
+score losses, and still keep Sabaki-friendly variation coordinates.
+
+```console
+analyze-sgf -g 'commentStyle:"compact",language:"fr"' baduk.sgf
+```
+
+Readable comments support `language:"en"` and `language:"fr"`. Move tree
+annotations can be controlled with `annotationStyle`. The default `auto` keeps
+the legacy winrate-based annotations for `legacy`, and uses score-loss-based
+classification annotations for `compact`.
+
 If you hover your mouse over a proposed variation in Sabaki, the sequence of
 the variation is automatically played as shown in the screenshot above.
 
@@ -234,6 +250,32 @@ runtime. That is, you should run it like this:
 analyze-sgf -a 'rules:"korean"' baduk.sgf
 ```
 
+If your `~/.analyze-sgf.yml` was created by an older version, missing new
+sections are automatically filled from the built-in defaults. You only need to
+add them manually if you want to override them.
+
+Readable review options:
+
+```yml
+sgf:
+  commentStyle: "legacy" # legacy, compact, detailed
+  language: "en"         # en, fr
+  annotationStyle: "auto" # auto, legacy, classification, none
+
+classification:
+  enabled: true
+  bestMaxScoreLoss: 0.05
+  excellentMaxScoreLoss: 0.2
+  greatMaxScoreLoss: 0.6
+  goodMaxScoreLoss: 1.2
+  inaccuracyMaxScoreLoss: 4.0
+  mistakeMaxScoreLoss: 10.0
+
+summary:
+  enabled: true
+  maxKeyMoments: 5
+```
+
 ## Advanced Options
 
 ### Saving analysis data with `-s`
@@ -260,6 +302,20 @@ executed using `baduk.json`, not KataGo.
 ```console
 analyze-sgf -a 'analyzeTurns:[170,171]' -g 'maxVariationsForEachMove:20,showBadVariations:true' -f baduk.json
 ```
+
+This is also the recommended workflow when comparing comment styles because it
+avoids rerunning KataGo:
+
+```console
+analyze-sgf -s baduk.sgf
+analyze-sgf -f -g 'commentStyle:"legacy",fileSuffix:"-legacy"' baduk.json
+analyze-sgf -f -g 'commentStyle:"compact",language:"fr",fileSuffix:"-compact-fr"' baduk.json
+```
+
+`-s` writes `baduk.json` next to the input SGF. `-f baduk.json` regenerates a
+reviewed SGF from that cached KataGo analysis and ignores `-s` and `--revisit`.
+Use different `fileSuffix` values to avoid overwriting files while comparing
+outputs.
 
 Now you can see up to 20 variations of the 171th and 172th moves including
 the variations of bad win rates. Please note that `-a` option values such

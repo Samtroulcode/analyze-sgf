@@ -24,14 +24,20 @@ analysis:
 
 # Options for making reviewed SGF files.
 sgf:
-  # Comment format. Currently only legacy is rendered. compact and detailed
-  # will be added by future readable review renderers.
+  # Comment format.
+  # legacy: original technical report and move comments.
+  # compact: readable localized review comments and root summary.
+  # detailed: reserved for a future richer readable format.
   commentStyle: "legacy"
-  # Comment language for future readable review renderers.
+  # Comment language for readable review renderers.
+  # Supported values: en, fr.
   language: "en"
   # Move annotations in SGF. auto keeps legacy annotations for legacy comments,
   # and uses score-based classification for compact/detailed comments.
-  # Other values: legacy, classification, none.
+  # Other values:
+  # legacy: winrate-based TE/BM/HO markers.
+  # classification: score-loss-based TE/IT/DO/BM/HO markers.
+  # none: no move annotation markers.
   annotationStyle: "auto"
   # SGF can put good/bad/hotspot labels on moves for coloring game tree.
   # When you open reviewed SGF in applications like Sabaki, you can check
@@ -62,16 +68,27 @@ sgf:
   fileSuffix: "-analyzed"
 
 # Options for readable move classification.
+# Classification is based on estimated score loss, not winrate loss.
+# The first raw KataGo choice can be classified as best; other zero-loss moves
+# are excellent. Threshold values are points lost by the player who moved.
 classification:
   enabled: true
+  # Top raw KataGo choice with at most this score loss.
   bestMaxScoreLoss: 0.05
+  # Very small loss, or zero-loss non-top choice.
   excellentMaxScoreLoss: 0.2
+  # Small loss.
   greatMaxScoreLoss: 0.6
+  # Acceptable loss.
   goodMaxScoreLoss: 1.2
+  # Noticeable loss.
   inaccuracyMaxScoreLoss: 4.0
+  # Large loss. Anything above this is a blunder.
   mistakeMaxScoreLoss: 10.0
 
 # Options for readable game summaries.
 summary:
+  # Applies only to compact/detailed comments. Legacy keeps the original report.
   enabled: true
+  # Maximum number of largest score-loss moments in the root summary.
   maxKeyMoments: 5

@@ -67,7 +67,9 @@ Examples:
   analyze-sgf baduk-1.sgf baduk-2.gib
   analyze-sgf 'https://www.cyberoro.com/gibo_new/giboviewer/......'
   analyze-sgf -a 'maxVisits:16400,analyzeTurns:[197,198]' baduk.sgf
+  analyze-sgf -s baduk.sgf
   analyze-sgf -f baduk.json
+  analyze-sgf -f -g 'commentStyle:"compact",language:"fr"' baduk.json
   analyze-sgf -g 'maxVariationsForEachMove:15' -r 20000 baduk.sgf
 
 Edit ~/.analyze-sgf.yml for default options
@@ -178,6 +180,15 @@ generated: [제22회 농심배 12국, 2021-02-24] 이치리키 료 vs 신진서 
 매 수마다 승률 및 집 변동에 관한 정보, 카타고 추천수와 일치 여부, 승률 하락이 큰 수에
 대한 링크 등을 포함하고 있어서 빠르게 승부처를 분석할 수 있습니다.
 
+기본 `commentStyle`은 `"legacy"`이며 기존의 기술적인 보고서를 유지합니다. 더 읽기 쉬운
+검토용 주석을 원하면 `commentStyle:"compact"`를 사용할 수 있습니다. `compact`는 현지화된
+착수 평가, 읽기 쉬운 루트 요약, 예상 집 손실을 표시하며 사바키에서 변화도 미리보기가
+동작하는 좌표 표기는 유지합니다.
+
+```console
+analyze-sgf -g 'commentStyle:"compact",language:"fr"' baduk.sgf
+```
+
 사바키에서 색깔이 검게 반전된 변화도 수순 위에 마우스를 올리면 위의 스크린숏처럼 자동으로
 수순이 진행됩니다.
 
@@ -222,6 +233,22 @@ analyze-sgf -a 'maxVisits:10000,analyzeTurns:[173,175]' -g 'maxVariationsForEach
 analyze-sgf -a 'rules:"korean"' baduk.sgf
 ```
 
+오래된 버전에서 생성한 `~/.analyze-sgf.yml`에 새 설정 항목이 없더라도 내장 기본값으로
+자동 보완됩니다. 값을 바꾸고 싶을 때만 직접 추가하면 됩니다.
+
+읽기 쉬운 검토 관련 주요 옵션은 다음과 같습니다.
+
+```yml
+sgf:
+  commentStyle: "legacy" # legacy, compact, detailed
+  language: "en"         # en, fr
+  annotationStyle: "auto" # auto, legacy, classification, none
+
+summary:
+  enabled: true
+  maxKeyMoments: 5
+```
+
 ## 고급 설정
 
 ### 분석 데이터 저장
@@ -245,6 +272,18 @@ generated: baduk-analyzed.sgf
 ```console
 analyze-sgf -a 'analyzeTurns:[170,171]' -g 'maxVariationsForEachMove:20,showBadVariations:true' -f baduk.json
 ```
+
+주석 형식을 비교할 때도 `-s`와 `-f`를 함께 쓰는 것이 좋습니다. 카타고를 다시 실행하지 않고
+같은 분석 데이터로 여러 SGF를 만들 수 있습니다.
+
+```console
+analyze-sgf -s baduk.sgf
+analyze-sgf -f -g 'commentStyle:"legacy",fileSuffix:"-legacy"' baduk.json
+analyze-sgf -f -g 'commentStyle:"compact",language:"fr",fileSuffix:"-compact-fr"' baduk.json
+```
+
+`-s`는 입력 SGF 옆에 `baduk.json`을 저장합니다. `-f baduk.json`은 저장된 카타고 분석을
+사용해서 SGF를 다시 만들며, 여러 출력을 비교할 때는 `fileSuffix`를 다르게 지정하세요.
 
 이제 171, 172 번째 수의 변화도를 나쁜 변화도까지 포함해서 최대 20개까지 볼 수 있습니다.
 저장된 분석 정보를 이용하기 때문에 `analyzeTurns`를 제외한 `maxVisits`, `komi` 등의

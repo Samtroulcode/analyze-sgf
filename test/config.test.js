@@ -6,7 +6,7 @@ const yamlpath = require.resolve('../src/analyze-sgf.yml');
 const opts = yaml.load(fs.readFileSync(yamlpath));
 
 describe('default config', () => {
-  it('should define future readable comment options.', () => {
+  it('should define readable comment options.', () => {
     assert.equal(opts.sgf.commentStyle, 'legacy');
     assert.equal(opts.sgf.language, 'en');
     assert.equal(opts.sgf.annotationStyle, 'auto');
@@ -24,7 +24,7 @@ describe('default config', () => {
     });
   });
 
-  it('should define future summary options.', () => {
+  it('should define summary options.', () => {
     assert.deepEqual(opts.summary, {
       enabled: true,
       maxKeyMoments: 5,
