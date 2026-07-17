@@ -2,7 +2,10 @@
  * @fileOverview Pure move classification helpers.
  */
 
+/* eslint max-lines: ["error", 200] */
+
 const DEFAULT_OPTIONS = Object.freeze({
+  profile: 'ogs',
   bestMaxScoreLoss: 0.05,
   excellentMaxScoreLoss: 0.2,
   greatMaxScoreLoss: 0.6,
@@ -53,6 +56,7 @@ function classifyMove(move, options) {
   if (scoreLoss === null && winrateLoss === null) {
     return {
       category: null,
+      profile: opts.profile,
       scoreLoss: null,
       winrateLoss: null,
       scoreCategory: null,
@@ -67,23 +71,32 @@ function classifyMove(move, options) {
       ? null
       : scoreCategoryFromLoss(scoreLoss, isTopChoice, opts);
   const winrateCategory =
-    winrateLoss === null ? null : winrateCategoryFromLoss(winrateLoss, opts);
-  const category = isTopChoice
-    ? 'best'
-    : finalCategory(scoreCategory, winrateCategory);
+    winrateLoss === null || opts.profile === 'ogs'
+      ? null
+      : winrateCategoryFromLoss(winrateLoss, opts);
+  const category = finalCategory(
+    scoreCategory,
+    winrateCategory,
+    isTopChoice,
+    opts,
+  );
 
   return {
     category,
+    profile: opts.profile,
     scoreLoss,
-    winrateLoss: isTopChoice ? 0 : winrateLoss,
+    winrateLoss: opts.profile === 'hybrid' && isTopChoice ? 0 : winrateLoss,
     scoreCategory,
-    winrateCategory: isTopChoice ? 'best' : winrateCategory,
+    winrateCategory:
+      opts.profile === 'hybrid' && isTopChoice ? 'best' : winrateCategory,
     severity: SEVERITY[category],
     isTopChoice,
   };
 }
 
-function finalCategory(scoreCategory, winrateCategory) {
+function finalCategory(scoreCategory, winrateCategory, isTopChoice, opts) {
+  if (opts.profile === 'ogs') return scoreCategory;
+  if (isTopChoice) return 'best';
   return isMissedOpportunity(scoreCategory, winrateCategory)
     ? 'missedOpportunity'
     : mostSevereCategory(scoreCategory, winrateCategory);
@@ -97,6 +110,21 @@ function isMissedOpportunity(scoreCategory, winrateCategory) {
 }
 
 function scoreCategoryFromLoss(scoreLoss, isTopChoice, opts) {
+  if (opts.profile === 'ogs')
+    return ogsScoreCategoryFromLoss(scoreLoss, opts);
+  return hybridScoreCategoryFromLoss(scoreLoss, isTopChoice, opts);
+}
+
+function ogsScoreCategoryFromLoss(scoreLoss, opts) {
+  if (scoreLoss < opts.excellentMaxScoreLoss) return 'excellent';
+  if (scoreLoss < opts.greatMaxScoreLoss) return 'great';
+  if (scoreLoss < opts.goodMaxScoreLoss) return 'good';
+  if (scoreLoss < opts.inaccuracyMaxScoreLoss) return 'inaccuracy';
+  if (scoreLoss < opts.mistakeMaxScoreLoss) return 'mistake';
+  return 'blunder';
+}
+
+function hybridScoreCategoryFromLoss(scoreLoss, isTopChoice, opts) {
   if (isTopChoice && scoreLoss <= opts.bestMaxScoreLoss) return 'best';
   if (scoreLoss <= opts.excellentMaxScoreLoss) return 'excellent';
   if (scoreLoss <= opts.greatMaxScoreLoss) return 'great';
@@ -122,7 +150,14 @@ function mostSevereCategory(...categories) {
 }
 
 function validateOptions(options) {
-  validateThresholds(options, SCORE_THRESHOLDS);
+  if (options.profile !== 'ogs' && options.profile !== 'hybrid') {
+    throw Error(`Invalid classification profile: ${options.profile}`);
+  }
+
+  const scoreThresholds =
+    options.profile === 'ogs' ? SCORE_THRESHOLDS.slice(1) : SCORE_THRESHOLDS;
+
+  validateThresholds(options, scoreThresholds);
   validateThresholds(options, WINRATE_THRESHOLDS);
 
   return options;

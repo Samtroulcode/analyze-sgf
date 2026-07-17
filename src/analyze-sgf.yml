@@ -68,28 +68,32 @@ sgf:
   fileSuffix: "-analyzed"
 
 # Options for readable move classification.
-# Classification combines estimated score loss and winrate loss. The final
-# category is the more severe of both signals. The first raw KataGo choice is
-# always best to avoid penalizing search noise between consecutive root infos.
-# Large score losses with low winrate impact are shown as missed opportunities.
+# The default "ogs" profile follows Online-Go.com's score-loss categories:
+# Excellent < 0.2, Great < 0.6, Good < 1.2, Inaccuracy < 4.0,
+# Mistake < 10.0, Blunder >= 10.0.
+# The optional "hybrid" profile combines score loss and winrate loss, keeps the
+# raw KataGo top choice as Best, and can show low-winrate-impact score losses
+# as missed opportunities.
 # In compact/detailed annotation mode, best/excellent are marked interesting
 # (blue in Sabaki), great/good are marked good (green), missed opportunities
 # and inaccuracies are marked doubtful, and mistakes/blunders are marked bad.
 classification:
   enabled: true
-  # Top raw KataGo choice with at most this score loss.
+  profile: "ogs"
+  # Hybrid only: top raw KataGo choice with at most this score loss.
   bestMaxScoreLoss: 0.05
-  # Very small loss, or zero-loss non-top choice.
+  # OGS: Excellent below this score loss. Hybrid: very small loss.
   excellentMaxScoreLoss: 0.2
-  # Small loss.
+  # OGS: Great below this score loss. Hybrid: small loss.
   greatMaxScoreLoss: 0.6
-  # Acceptable loss.
+  # OGS: Good below this score loss. Hybrid: acceptable loss.
   goodMaxScoreLoss: 1.2
-  # Noticeable loss.
+  # OGS: Inaccuracy below this score loss. Hybrid: noticeable loss.
   inaccuracyMaxScoreLoss: 4.0
-  # Large loss. Anything above this is a blunder.
+  # OGS: Mistake below this score loss. Anything above is a blunder.
   mistakeMaxScoreLoss: 10.0
-  # Winrate-loss thresholds are percentage points lost by the player who moved.
+  # Hybrid only: winrate-loss thresholds are percentage points lost by the
+  # player who moved.
   excellentMaxWinrateLoss: 1.0
   greatMaxWinrateLoss: 3.0
   goodMaxWinrateLoss: 7.0

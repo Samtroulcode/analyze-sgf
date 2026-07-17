@@ -15,6 +15,7 @@ describe('default config', () => {
   it('should define default classification options.', () => {
     assert.deepEqual(opts.classification, {
       enabled: true,
+      profile: 'ogs',
       bestMaxScoreLoss: 0.05,
       excellentMaxScoreLoss: 0.2,
       greatMaxScoreLoss: 0.6,

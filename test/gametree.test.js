@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 280], max-lines-per-function: ["error", 220] */
+/* eslint max-lines: ["error", 280], max-lines-per-function: ["error", 230] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -93,10 +93,11 @@ describe('GameTree', () => {
     assert.equal(gametree.nodes[0].choice, -1);
     assert.deepEqual(gametree.nodes[0].classification, {
       category: 'good',
+      profile: 'ogs',
       scoreLoss: 1,
       winrateLoss: 1,
       scoreCategory: 'good',
-      winrateCategory: 'excellent',
+      winrateCategory: null,
       severity: 3,
       isTopChoice: false,
     });
@@ -117,12 +118,13 @@ describe('GameTree', () => {
     const gametree = new GameTree('(;B[aa])', responses, gopts);
 
     assert.deepEqual(gametree.nodes[0].classification, {
-      category: 'best',
+      category: 'excellent',
+      profile: 'ogs',
       scoreLoss: 0,
       winrateLoss: 0,
-      scoreCategory: 'best',
-      winrateCategory: 'best',
-      severity: 0,
+      scoreCategory: 'excellent',
+      winrateCategory: null,
+      severity: 1,
       isTopChoice: true,
     });
     assert(gametree.getSGF().indexOf('Estimated loss: 0.0 points') !== -1);
@@ -150,12 +152,13 @@ describe('GameTree', () => {
 
     assert.equal(gametree.nodes[1].rawChoiceRank, 1);
     assert.deepEqual(gametree.nodes[1].classification, {
-      category: 'good',
+      category: 'inaccuracy',
+      profile: 'ogs',
       scoreLoss: 1.2,
       winrateLoss: 0,
-      scoreCategory: 'good',
-      winrateCategory: 'excellent',
-      severity: 3,
+      scoreCategory: 'inaccuracy',
+      winrateCategory: null,
+      severity: 4,
       isTopChoice: false,
     });
   });
@@ -210,7 +213,7 @@ describe('GameTree', () => {
     const gametree = new GameTree('(;B[aa])', responses, gopts);
     const sgf = gametree.getSGF();
 
-    assert(sgf.indexOf('Move 1 - Black - Best') !== -1);
+    assert(sgf.indexOf('Move 1 - Black - Excellent') !== -1);
     assert(sgf.indexOf('Estimated loss: 0.0 points') !== -1);
     assert(sgf.indexOf('Victory impact: -0.0%') !== -1);
     assert(sgf.indexOf('Best choice: A19') !== -1);

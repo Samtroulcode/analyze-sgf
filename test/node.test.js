@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 470], max-lines-per-function: ["error", 120] */
+/* eslint max-lines: ["error", 500], max-lines-per-function: ["error", 120] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -37,6 +37,7 @@ describe('Node.setWinrate', () => {
     assert.equal(node.scoreDrop, undefined);
     assert.deepEqual(node.classification, {
       category: null,
+      profile: 'ogs',
       scoreLoss: null,
       winrateLoss: null,
       scoreCategory: null,
@@ -63,10 +64,11 @@ describe('Node.setWinrate', () => {
     assert.equal(node.myScoreLead, currinfo.scoreLead);
     assert.deepEqual(node.classification, {
       category: 'excellent',
+      profile: 'ogs',
       scoreLoss: 0,
       winrateLoss: 0,
       scoreCategory: 'excellent',
-      winrateCategory: 'excellent',
+      winrateCategory: null,
       severity: 1,
       isTopChoice: false,
     });
@@ -87,7 +89,7 @@ describe('Node.setWinrate', () => {
 });
 
 describe('Node classification', () => {
-  it('should combine score loss and winrate impact.', () => {
+  it('should use OGS score-loss classification by default.', () => {
     const node = new Node(';B[aa]');
     const previnfo = { winrate: 0.9, scoreLead: 0, visits: 1000 };
     const currinfo = { winrate: 0.69, scoreLead: -0.1, visits: 1000 };
@@ -95,15 +97,29 @@ describe('Node classification', () => {
     node.setWinrate(previnfo, currinfo, sgfopts);
 
     assert.deepEqual(node.classification, {
-      category: 'mistake',
+      category: 'excellent',
+      profile: 'ogs',
       scoreLoss: 0.1,
       winrateLoss: 21,
       scoreCategory: 'excellent',
-      winrateCategory: 'mistake',
-      severity: 5,
+      winrateCategory: null,
+      severity: 1,
       isTopChoice: false,
     });
     assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
+  });
+
+  it('should support hybrid score and winrate classification.', () => {
+    const node = new Node(';B[aa]');
+    const previnfo = { winrate: 0.9, scoreLead: 0, visits: 1000 };
+    const currinfo = { winrate: 0.69, scoreLead: -0.1, visits: 1000 };
+
+    node.setWinrate(previnfo, currinfo, {
+      ...sgfopts,
+      classification: { ...sgfopts.classification, profile: 'hybrid' },
+    });
+
+    assert.equal(node.classification.category, 'mistake');
   });
 
   it('should classify top choice under best threshold as best.', () => {
@@ -115,12 +131,13 @@ describe('Node classification', () => {
     node.setWinrate(previnfo, currinfo, sgfopts);
 
     assert.deepEqual(node.classification, {
-      category: 'best',
+      category: 'excellent',
+      profile: 'ogs',
       scoreLoss: 0.04,
-      winrateLoss: 0,
-      scoreCategory: 'best',
-      winrateCategory: 'best',
-      severity: 0,
+      winrateLoss: 1,
+      scoreCategory: 'excellent',
+      winrateCategory: null,
+      severity: 1,
       isTopChoice: true,
     });
   });
@@ -201,7 +218,7 @@ describe('Node.getSGF', () => {
 
     assert.equal(
       node.getSGF(),
-      ';B[aa]C[Move 1 - Black - Best\n\n' +
+      ';B[aa]C[Move 1 - Black - Excellent\n\n' +
         'Estimated loss: 0.0 points\n' +
         'Victory impact: -0.0%\n' +
         'Played move: A19\n' +
@@ -251,7 +268,7 @@ describe('Node SGF annotations', () => {
       sgfopts,
     );
 
-    assert.equal(node.classification.category, 'mistake');
+    assert.equal(node.classification.category, 'inaccuracy');
     assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
   });
 
@@ -268,13 +285,16 @@ describe('Node SGF annotations', () => {
     assert.equal(node.node, ';B[aa]TE[1]SBKV[49.00]');
   });
 
-  it('should mark compact missed opportunities as doubtful.', () => {
+  it('should mark hybrid compact missed opportunities as doubtful.', () => {
     const node = new Node(';B[aa]');
 
     node.setWinrate(
       { winrate: 0.5, scoreLead: 0, visits: 1000 },
       { winrate: 0.49, scoreLead: -7, visits: 1000 },
-      compactOpts('en'),
+      {
+        ...compactOpts('en'),
+        classification: { ...sgfopts.classification, profile: 'hybrid' },
+      },
     );
 
     assert.equal(node.classification.category, 'missedOpportunity');
@@ -424,12 +444,13 @@ describe('Tail.getSGF', () => {
     );
 
     assert.deepEqual(tail.classification, {
-      category: 'best',
+      category: 'excellent',
+      profile: 'ogs',
       scoreLoss: 0,
-      winrateLoss: 0,
-      scoreCategory: 'best',
-      winrateCategory: 'best',
-      severity: 0,
+      winrateLoss: 1,
+      scoreCategory: 'excellent',
+      winrateCategory: null,
+      severity: 1,
       isTopChoice: true,
     });
   });
@@ -447,7 +468,7 @@ describe('Tail.getSGF', () => {
 
     assert.equal(
       tail.getSGF(),
-      ';B[aa]C[Coup 1 - Noir - Meilleur\n\n' +
+      ';B[aa]C[Coup 1 - Noir - Excellent\n\n' +
         'Perte estimée: 0.0 points\n' +
         'Impact victoire: -0.0%\n' +
         'Coup joué: A19\n' +

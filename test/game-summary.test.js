@@ -54,10 +54,10 @@ describe('game summary', () => {
     assert(report.indexOf('Board size: 13x13') !== -1);
     assert(report.indexOf('Result: Black wins by resignation') !== -1);
     assert(report.indexOf('Date: 2024-07-09') !== -1);
-    assert(report.indexOf('Sammu (Black) - 1\nBest: 1') !== -1);
-    assert(report.indexOf('bun_patty (White) - 1\nInaccuracy: 1') !== -1);
+    assert(report.indexOf('Sammu (Black) - 1\nExcellent: 1') !== -1);
+    assert(report.indexOf('bun_patty (White) - 1\nMistake: 1') !== -1);
     assert(report.indexOf('Sum of estimated losses: 4.00 points') !== -1);
-    assert(report.indexOf('#2 White - Inaccuracy - 4.00 points') !== -1);
+    assert(report.indexOf('#2 White - Mistake - 4.00 points') !== -1);
     assert(
       report.indexOf(
         'Analyzed by KataGo Parallel Analysis Engine (30 max visits).',
@@ -86,6 +86,6 @@ describe('game summary', () => {
 
     assert(report.indexOf("# Résumé de l'analyse") !== -1);
     assert(report.indexOf('Joueurs: Noir (Noir) vs Blanc (Blanc)') !== -1);
-    assert(report.indexOf('Blanc (Blanc) - 1\nImprécision: 1') !== -1);
+    assert(report.indexOf('Blanc (Blanc) - 1\nErreur: 1') !== -1);
   });
 });
