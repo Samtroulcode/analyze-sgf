@@ -6,6 +6,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
 const sgfconv = require('./sgfconv');
+const { classifyMove } = require('./move-classifier');
 
 // Carries a SGF Node and its win rate.
 class Node {
@@ -41,6 +42,7 @@ class Node {
   // the properties of this.node.
   setWinrate(prevInfo, curInfo, opts) {
     calcWinrate(this, prevInfo, curInfo);
+    setClassification(this, opts);
     setProperties(this, opts);
   }
 
@@ -77,6 +79,13 @@ function calcWinrate(that, prevInfo, curInfo) {
   that.winrate = curInfo.winrate;
   that.scoreLead = curInfo.scoreLead;
   that.visits = curInfo.visits;
+}
+
+function setClassification(that, opts) {
+  that.classification = classifyMove(
+    { scoreDrop: that.scoreDrop, rawChoiceRank: that.rawChoiceRank },
+    opts && opts.classification,
+  );
 }
 
 const float = (f) => parseFloat(f).toFixed(2);

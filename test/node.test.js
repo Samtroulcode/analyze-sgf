@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 260], max-lines-per-function: ["error", 70] */
+/* eslint max-lines: ["error", 320], max-lines-per-function: ["error", 90] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -28,6 +28,12 @@ describe('Node.setWinrate', () => {
 
     assert.equal(node.winrateDrop, undefined);
     assert.equal(node.scoreDrop, undefined);
+    assert.deepEqual(node.classification, {
+      category: null,
+      scoreLoss: null,
+      severity: null,
+      isTopChoice: false,
+    });
   });
 
   it('should result expected winrate drop.', () => {
@@ -45,6 +51,12 @@ describe('Node.setWinrate', () => {
     assert.equal(node.scoreDrop.toFixed(1), -1.5);
     assert.equal(node.myWinrate, currinfo.winrate);
     assert.equal(node.myScoreLead, currinfo.scoreLead);
+    assert.deepEqual(node.classification, {
+      category: 'excellent',
+      scoreLoss: 0,
+      severity: 1,
+      isTopChoice: false,
+    });
   });
 
   it('should result inverted winrate drop.', () => {
@@ -58,6 +70,40 @@ describe('Node.setWinrate', () => {
     assert.equal(node.scoreDrop.toFixed(1), 1.5);
     assert.equal(node.myScoreLead.toFixed(1), -6.5);
     assert.equal(node.myWinrate.toFixed(2), 0.56);
+  });
+});
+
+describe('Node classification', () => {
+  it('should classify by scoreDrop, not winrate annotations.', () => {
+    const node = new Node(';B[aa]');
+    const previnfo = { winrate: 0.9, scoreLead: 0, visits: 1000 };
+    const currinfo = { winrate: 0.69, scoreLead: -0.1, visits: 1000 };
+
+    node.setWinrate(previnfo, currinfo, sgfopts);
+
+    assert.deepEqual(node.classification, {
+      category: 'excellent',
+      scoreLoss: 0.1,
+      severity: 1,
+      isTopChoice: false,
+    });
+    assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
+  });
+
+  it('should classify top choice under best threshold as best.', () => {
+    const node = new Node(';B[aa]');
+    const previnfo = { winrate: 0.5, scoreLead: 0, visits: 1000 };
+    const currinfo = { winrate: 0.49, scoreLead: -0.04, visits: 1000 };
+
+    node.rawChoiceRank = 0;
+    node.setWinrate(previnfo, currinfo, sgfopts);
+
+    assert.deepEqual(node.classification, {
+      category: 'best',
+      scoreLoss: 0.04,
+      severity: 0,
+      isTopChoice: true,
+    });
   });
 });
 
@@ -240,5 +286,25 @@ describe('Tail.getSGF', () => {
         '1. BA19 B18 (B 51.00%, B 1.00, 100 visits)\n' +
         '2. BB18 C17 (W 50.00%, B 1.00, 50 visits)\n',
     );
+  });
+
+  it('should refresh classification after raw rank is set.', () => {
+    const tail = new Tail(';B[aa]', 'Move 1');
+
+    tail.setWinrate(
+      { winrate: 0.5, scoreLead: 0, visits: 1000 },
+      { winrate: 0.49, scoreLead: -0.04, visits: 100 },
+      sgfopts,
+    );
+    assert.equal(tail.classification.category, 'excellent');
+
+    tail.setVariations([makeVariation('(;B[aa];W[bb])', 0.51, 100)], 19, 0);
+
+    assert.deepEqual(tail.classification, {
+      category: 'best',
+      scoreLoss: 0.04,
+      severity: 0,
+      isTopChoice: true,
+    });
   });
 });

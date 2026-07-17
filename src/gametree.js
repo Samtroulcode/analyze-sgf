@@ -129,6 +129,7 @@ function setWinrateAndVariatons(that, katagoResponses, pls) {
             nextPL,
             that.nodes[nextTurn].node,
           ),
+          that.opts.classification,
         );
 
       return {

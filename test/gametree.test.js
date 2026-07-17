@@ -91,6 +91,12 @@ describe('GameTree', () => {
 
     assert.equal(gametree.nodes[0].rawChoiceRank, 1);
     assert.equal(gametree.nodes[0].choice, -1);
+    assert.deepEqual(gametree.nodes[0].classification, {
+      category: 'good',
+      scoreLoss: 1,
+      severity: 3,
+      isTopChoice: false,
+    });
     assert.equal(gametree.getSGF().indexOf('* KataGo choice'), -1);
   });
 
