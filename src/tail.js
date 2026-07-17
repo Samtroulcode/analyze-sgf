@@ -5,6 +5,7 @@
 
 const sgfconv = require('./sgfconv');
 const Node = require('./node');
+const { renderCompactTail } = require('./comment-renderer');
 const { classifyMove } = require('./move-classifier');
 
 // Carries a SGF Tail.
@@ -13,6 +14,7 @@ class Tail extends Node {
   setVariations(variations, boardYSize, rawChoiceRank, classificationOpts) {
     this.variations = variations;
     this.rawChoiceRank = rawChoiceRank;
+    this.opts = { ...this.opts, boardYSize };
     if (this.classification)
       this.classification = classifyMove(
         { scoreDrop: this.scoreDrop, rawChoiceRank: this.rawChoiceRank },
@@ -38,6 +40,11 @@ class Tail extends Node {
   // Gets SGF node with comments.
   getSGF() {
     if (this.info && this.report && this.pvs && this.sgf) return this.sgf;
+
+    if (this.isCompact()) {
+      this.sgf = sgfconv.addComment(this.node, renderCompactTail(this));
+      return this.sgf;
+    }
 
     if (this.choice >= 0) {
       const choiceText = `* KataGo ${

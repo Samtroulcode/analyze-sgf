@@ -6,6 +6,7 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 
 const sgfconv = require('./sgfconv');
+const { renderCompactNode } = require('./comment-renderer');
 const { classifyMove } = require('./move-classifier');
 
 // Carries a SGF Node and its win rate.
@@ -13,6 +14,7 @@ class Node {
   constructor(node, title) {
     // e.g., ';B[aa]', ';W[cc]'.
     this.node = node;
+    this.title = title;
     this.info = title ? `${title}\n` : '';
     this.report = '';
 
@@ -32,15 +34,22 @@ class Node {
   getSGF() {
     if (this.sgf) return this.sgf;
 
-    const comment = [this.info, this.report].filter((v) => v).join('\n');
+    const comment = this.isCompact()
+      ? renderCompactNode(this)
+      : [this.info, this.report].filter((v) => v).join('\n');
     this.sgf = comment ? sgfconv.addComment(this.node, comment) : this.node;
 
     return this.sgf;
   }
 
+  isCompact() {
+    return this.opts && this.opts.commentStyle === 'compact';
+  }
+
   // Calculates scoreDrop, winrateDrop, ... and sets them to this.info and
   // the properties of this.node.
   setWinrate(prevInfo, curInfo, opts) {
+    this.opts = opts;
     calcWinrate(this, prevInfo, curInfo);
     setClassification(this, opts);
     setProperties(this, opts);
@@ -115,9 +124,11 @@ function setProperties(that, opts) {
   that.propertiesGot = true;
 
   if (that.winrate != null) {
-    // Does not add winrate report to SGF comment property. Adds it when
-    // Node.getSGF() is called.
-    that.info += `\n${getWinratesInfo(that)}`;
+    if (!that.isCompact()) {
+      // Does not add winrate report to SGF comment property. Adds it when
+      // Node.getSGF() is called.
+      that.info += `\n${getWinratesInfo(that)}`;
+    }
 
     // RSGF win rate.
     that.node = sgfconv.addProperty(

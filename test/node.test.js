@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 320], max-lines-per-function: ["error", 90] */
+/* eslint max-lines: ["error", 400], max-lines-per-function: ["error", 110] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -12,6 +12,13 @@ const yamlpath = require.resolve('../src/analyze-sgf.yml');
 const opts = yaml.load(fs.readFileSync(yamlpath));
 const sgfopts = opts.sgf;
 sgfopts.boardYSize = opts.analysis.boardYSize;
+sgfopts.classification = opts.classification;
+
+const compactOpts = (language) => ({
+  ...sgfopts,
+  commentStyle: 'compact',
+  language,
+});
 
 describe('Node.setWinrate', () => {
   it('should result expected pl.', () => {
@@ -171,6 +178,26 @@ describe('Node.getSGF', () => {
 
     assert.equal(node.getSGF(), node.getSGF());
   });
+
+  it('should render compact English move comments.', () => {
+    const node = new Node(';B[aa]', 'Move 1');
+    const previnfo = { winrate: 0.5, scoreLead: 0, visits: 1 };
+    const currinfo = { winrate: 0.51, scoreLead: 1.25, visits: 123 };
+
+    node.rawChoiceRank = 0;
+    node.setWinrate(previnfo, currinfo, compactOpts('en'));
+
+    assert.equal(
+      node.getSGF(),
+      ';B[aa]C[Move 1 - Black - Best\n\n' +
+        'Estimated loss: 0.00 points\n' +
+        'Played move: A19\n' +
+        'KataGo choice: #1\n\n' +
+        'Winrate: Black 51.00%\n' +
+        'Estimated score: B +1.25\n' +
+        'Visits: 123]TE[1]SBKV[51.00]',
+    );
+  });
 });
 
 describe('Node SGF annotations', () => {
@@ -306,5 +333,31 @@ describe('Tail.getSGF', () => {
       severity: 0,
       isTopChoice: true,
     });
+  });
+
+  it('should render compact French comments with variations.', () => {
+    const tail = new Tail(';B[aa]', 'Move 1');
+    const optsfr = compactOpts('fr');
+
+    tail.setVariations([makeVariation('(;B[aa];W[bb])', 0.51, 100)], 19, 0);
+    tail.setWinrate(
+      { winrate: 0.5, scoreLead: 0, visits: 1 },
+      { winrate: 0.51, scoreLead: 1.25, visits: 123 },
+      optsfr,
+    );
+
+    assert.equal(
+      tail.getSGF(),
+      ';B[aa]C[Coup 1 - Noir - Meilleur\n\n' +
+        'Perte estimée: 0.00 points\n' +
+        'Coup joué: A19\n' +
+        'Meilleur choix: A19\n' +
+        'Choix KataGo: #1\n\n' +
+        'Taux de gain: Noir 51.00%\n' +
+        'Score estimé: B +1.25\n' +
+        'Visites: 123\n\n' +
+        'Variations proposées\n\n' +
+        '1. BA19 B18 (B 51.00%, B 1.00, 100 visits)]TE[1]SBKV[51.00]',
+    );
   });
 });

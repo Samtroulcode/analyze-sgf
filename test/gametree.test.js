@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 200], max-lines-per-function: ["error", 140] */
+/* eslint max-lines: ["error", 220], max-lines-per-function: ["error", 160] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -131,6 +131,25 @@ describe('GameTree', () => {
     const gametree = new GameTree('(;B[aa])', responses, gopts);
 
     assert.equal(gametree.nodes[0].classification.category, 'good');
+  });
+
+  it('should render compact comments in generated SGF.', () => {
+    const gopts = { ...sgfopts, commentStyle: 'compact', language: 'en' };
+    const responses = `${JSON.stringify({
+      turnNumber: 0,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [{ pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 1 }],
+    })}\n${JSON.stringify({
+      turnNumber: 1,
+      rootInfo: { winrate: 0.51, scoreLead: 1.25, visits: 10 },
+      moveInfos: [],
+    })}\n`;
+    const gametree = new GameTree('(;B[aa])', responses, gopts);
+    const sgf = gametree.getSGF();
+
+    assert(sgf.indexOf('Move 1 - Black - Best') !== -1);
+    assert(sgf.indexOf('Estimated loss: 0.00 points') !== -1);
+    assert(sgf.indexOf('Best choice: A19') !== -1);
   });
 
   it('should be expected values for "t-sabaki-1-default.sgf".', () => {
