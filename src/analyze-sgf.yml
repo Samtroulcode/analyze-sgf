@@ -29,6 +29,10 @@ sgf:
   commentStyle: "legacy"
   # Comment language for future readable review renderers.
   language: "en"
+  # Move annotations in SGF. auto keeps legacy annotations for legacy comments,
+  # and uses score-based classification for compact/detailed comments.
+  # Other values: legacy, classification, none.
+  annotationStyle: "auto"
   # SGF can put good/bad/hotspot labels on moves for coloring game tree.
   # When you open reviewed SGF in applications like Sabaki, you can check
   # them. Please visit <https://sabaki.yichuanshen.de/>.

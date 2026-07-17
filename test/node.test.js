@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 400], max-lines-per-function: ["error", 110] */
+/* eslint max-lines: ["error", 430], max-lines-per-function: ["error", 110] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -227,6 +227,58 @@ describe('Node SGF annotations', () => {
   it('should keep BM and HO boundary behavior.', () => {
     assert.equal(annotatedNode(0.2), ';B[aa]BM[1]SBKV[30.00]');
     assert.equal(annotatedNode(0.201), ';B[aa]BM[1]HO[1]SBKV[29.90]');
+  });
+
+  it('should keep legacy annotations based on winrate.', () => {
+    const node = new Node(';B[aa]');
+
+    node.setWinrate(
+      { winrate: 0.9, scoreLead: 0, visits: 1000 },
+      { winrate: 0.69, scoreLead: -2, visits: 1000 },
+      sgfopts,
+    );
+
+    assert.equal(node.classification.category, 'inaccuracy');
+    assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
+  });
+
+  it('should not mark compact inaccuracies as bad moves.', () => {
+    const node = new Node(';B[aa]');
+
+    node.setWinrate(
+      { winrate: 0.9, scoreLead: 0, visits: 1000 },
+      { winrate: 0.69, scoreLead: -2, visits: 1000 },
+      compactOpts('en'),
+    );
+
+    assert.equal(node.classification.category, 'inaccuracy');
+    assert.equal(node.node, ';B[aa]SBKV[69.00]');
+  });
+
+  it('should mark compact mistakes from score-based classification.', () => {
+    const node = new Node(';B[aa]');
+
+    node.setWinrate(
+      { winrate: 0.5, scoreLead: 0, visits: 1000 },
+      { winrate: 0.49, scoreLead: -5, visits: 1000 },
+      compactOpts('en'),
+    );
+
+    assert.equal(node.classification.category, 'mistake');
+    assert.equal(node.node, ';B[aa]BM[1]SBKV[49.00]');
+  });
+
+  it('should mark compact blunders as bad hotspots.', () => {
+    const node = new Node(';B[aa]');
+
+    node.setWinrate(
+      { winrate: 0.5, scoreLead: 0, visits: 1000 },
+      { winrate: 0.49, scoreLead: -11, visits: 1000 },
+      compactOpts('en'),
+    );
+
+    assert.equal(node.classification.category, 'blunder');
+    assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[49.00]');
   });
 });
 

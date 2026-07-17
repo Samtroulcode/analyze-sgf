@@ -9,6 +9,7 @@ describe('default config', () => {
   it('should define future readable comment options.', () => {
     assert.equal(opts.sgf.commentStyle, 'legacy');
     assert.equal(opts.sgf.language, 'en');
+    assert.equal(opts.sgf.annotationStyle, 'auto');
   });
 
   it('should define default classification options.', () => {

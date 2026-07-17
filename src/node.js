@@ -138,6 +138,42 @@ function setProperties(that, opts) {
     );
   }
 
+  setAnnotations(that, opts);
+}
+
+function setAnnotations(that, opts) {
+  const style = annotationStyle(opts);
+
+  if (style === 'none') return;
+  if (style === 'classification') {
+    setClassificationAnnotations(that);
+    return;
+  }
+  setLegacyAnnotations(that, opts);
+}
+
+function annotationStyle(opts) {
+  if (opts.annotationStyle && opts.annotationStyle !== 'auto') {
+    return opts.annotationStyle;
+  }
+  return opts.commentStyle === 'compact' || opts.commentStyle === 'detailed'
+    ? 'classification'
+    : 'legacy';
+}
+
+function setClassificationAnnotations(that) {
+  const category = that.classification && that.classification.category;
+
+  if (category === 'best' || category === 'excellent') {
+    that.node = sgfconv.toGoodNode(that.node);
+  } else if (category === 'blunder') {
+    that.node = sgfconv.toBadHotSpot(that.node);
+  } else if (category === 'mistake') {
+    that.node = sgfconv.toBadNode(that.node);
+  }
+}
+
+function setLegacyAnnotations(that, opts) {
   if (that.winrateDrop < opts.maxWinrateDropForGoodMove / 100)
     that.node = sgfconv.toGoodNode(that.node);
   else if (that.winrateDrop > opts.minWinrateDropForBadHotSpot / 100)
