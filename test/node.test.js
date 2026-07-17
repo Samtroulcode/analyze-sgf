@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 450], max-lines-per-function: ["error", 120] */
+/* eslint max-lines: ["error", 470], max-lines-per-function: ["error", 120] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -208,7 +208,7 @@ describe('Node.getSGF', () => {
         'KataGo choice: #1\n\n' +
         'Winrate: Black 51.00%\n' +
         'Estimated score: B +1.25\n' +
-        'Visits: 123]TE[1]SBKV[51.00]',
+        'Visits: 123]IT[1]SBKV[51.00]',
     );
   });
 });
@@ -255,7 +255,7 @@ describe('Node SGF annotations', () => {
     assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
   });
 
-  it('should mark compact great moves as interesting.', () => {
+  it('should mark compact great moves as good.', () => {
     const node = new Node(';B[aa]');
 
     node.setWinrate(
@@ -265,7 +265,20 @@ describe('Node SGF annotations', () => {
     );
 
     assert.equal(node.classification.category, 'great');
-    assert.equal(node.node, ';B[aa]IT[1]SBKV[49.00]');
+    assert.equal(node.node, ';B[aa]TE[1]SBKV[49.00]');
+  });
+
+  it('should mark compact missed opportunities as doubtful.', () => {
+    const node = new Node(';B[aa]');
+
+    node.setWinrate(
+      { winrate: 0.5, scoreLead: 0, visits: 1000 },
+      { winrate: 0.49, scoreLead: -7, visits: 1000 },
+      compactOpts('en'),
+    );
+
+    assert.equal(node.classification.category, 'missedOpportunity');
+    assert.equal(node.node, ';B[aa]DO[1]SBKV[49.00]');
   });
 
   it('should mark compact inaccuracies as doubtful.', () => {
@@ -285,26 +298,26 @@ describe('Node SGF annotations', () => {
     const node = new Node(';B[aa]');
 
     node.setWinrate(
-      { winrate: 0.5, scoreLead: 0, visits: 1000 },
-      { winrate: 0.49, scoreLead: -5, visits: 1000 },
+      { winrate: 0.7, scoreLead: 0, visits: 1000 },
+      { winrate: 0.5, scoreLead: -5, visits: 1000 },
       compactOpts('en'),
     );
 
     assert.equal(node.classification.category, 'mistake');
-    assert.equal(node.node, ';B[aa]BM[1]SBKV[49.00]');
+    assert.equal(node.node, ';B[aa]BM[1]SBKV[50.00]');
   });
 
   it('should mark compact blunders as bad hotspots.', () => {
     const node = new Node(';B[aa]');
 
     node.setWinrate(
-      { winrate: 0.5, scoreLead: 0, visits: 1000 },
-      { winrate: 0.49, scoreLead: -11, visits: 1000 },
+      { winrate: 0.8, scoreLead: 0, visits: 1000 },
+      { winrate: 0.45, scoreLead: -11, visits: 1000 },
       compactOpts('en'),
     );
 
     assert.equal(node.classification.category, 'blunder');
-    assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[49.00]');
+    assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[45.00]');
   });
 });
 
@@ -444,7 +457,7 @@ describe('Tail.getSGF', () => {
         'Score estimé: B +1.25\n' +
         'Visites: 123\n\n' +
         'Variations proposées\n\n' +
-        '1. BA19 B18 (B 51.00%, B 1.00, 100 visits)]TE[1]SBKV[51.00]',
+        '1. BA19 B18 (B 51.00%, B 1.00, 100 visits)]IT[1]SBKV[51.00]',
     );
   });
 });

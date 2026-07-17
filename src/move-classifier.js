@@ -39,6 +39,7 @@ const SEVERITY = Object.freeze({
   great: 2,
   good: 3,
   inaccuracy: 4,
+  missedOpportunity: 4,
   mistake: 5,
   blunder: 6,
 });
@@ -69,7 +70,7 @@ function classifyMove(move, options) {
     winrateLoss === null ? null : winrateCategoryFromLoss(winrateLoss, opts);
   const category = isTopChoice
     ? 'best'
-    : mostSevereCategory(scoreCategory, winrateCategory);
+    : finalCategory(scoreCategory, winrateCategory);
 
   return {
     category,
@@ -80,6 +81,19 @@ function classifyMove(move, options) {
     severity: SEVERITY[category],
     isTopChoice,
   };
+}
+
+function finalCategory(scoreCategory, winrateCategory) {
+  return isMissedOpportunity(scoreCategory, winrateCategory)
+    ? 'missedOpportunity'
+    : mostSevereCategory(scoreCategory, winrateCategory);
+}
+
+function isMissedOpportunity(scoreCategory, winrateCategory) {
+  return (
+    SEVERITY[scoreCategory] >= SEVERITY.inaccuracy &&
+    SEVERITY[winrateCategory] <= SEVERITY.good
+  );
 }
 
 function scoreCategoryFromLoss(scoreLoss, isTopChoice, opts) {

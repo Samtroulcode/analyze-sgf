@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 190], max-lines-per-function: ["error", 190] */
+/* eslint max-lines: ["error", 220], max-lines-per-function: ["error", 220] */
 
 const assert = require('assert');
 
@@ -79,6 +79,21 @@ describe('classifyMove', () => {
         scoreCategory: 'good',
         winrateCategory: 'mistake',
         severity: 5,
+        isTopChoice: false,
+      },
+    );
+  });
+
+  it('should mark low-impact score losses as missed opportunity.', () => {
+    assert.deepEqual(
+      classifyMove({ scoreDrop: 7, winrateDrop: 2, rawChoiceRank: 2 }),
+      {
+        category: 'missedOpportunity',
+        scoreLoss: 7,
+        winrateLoss: 2,
+        scoreCategory: 'mistake',
+        winrateCategory: 'great',
+        severity: 4,
         isTopChoice: false,
       },
     );

@@ -1,4 +1,4 @@
-/* eslint max-lines-per-function: ["error", 90] */
+/* eslint max-lines-per-function: ["error", 100] */
 
 const assert = require('assert');
 
@@ -28,6 +28,10 @@ describe('comment-i18n', () => {
     assert.equal(categoryLabel('en', 'great'), 'Great');
     assert.equal(categoryLabel('en', 'good'), 'Good');
     assert.equal(categoryLabel('en', 'inaccuracy'), 'Inaccuracy');
+    assert.equal(
+      categoryLabel('en', 'missedOpportunity'),
+      'Missed opportunity',
+    );
     assert.equal(categoryLabel('en', 'mistake'), 'Mistake');
     assert.equal(categoryLabel('en', 'blunder'), 'Blunder');
   });
@@ -38,6 +42,10 @@ describe('comment-i18n', () => {
     assert.equal(categoryLabel('fr', 'great'), 'Très bon');
     assert.equal(categoryLabel('fr', 'good'), 'Bon');
     assert.equal(categoryLabel('fr', 'inaccuracy'), 'Imprécision');
+    assert.equal(
+      categoryLabel('fr', 'missedOpportunity'),
+      'Occasion manquée',
+    );
     assert.equal(categoryLabel('fr', 'mistake'), 'Erreur');
     assert.equal(categoryLabel('fr', 'blunder'), 'Grosse erreur');
   });

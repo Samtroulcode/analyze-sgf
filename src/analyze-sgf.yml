@@ -71,6 +71,10 @@ sgf:
 # Classification combines estimated score loss and winrate loss. The final
 # category is the more severe of both signals. The first raw KataGo choice is
 # always best to avoid penalizing search noise between consecutive root infos.
+# Large score losses with low winrate impact are shown as missed opportunities.
+# In compact/detailed annotation mode, best/excellent are marked interesting
+# (blue in Sabaki), great/good are marked good (green), missed opportunities
+# and inaccuracies are marked doubtful, and mistakes/blunders are marked bad.
 classification:
   enabled: true
   # Top raw KataGo choice with at most this score loss.

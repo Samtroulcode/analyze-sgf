@@ -206,6 +206,12 @@ annotations can be controlled with `annotationStyle`. The default `auto` keeps
 the legacy winrate-based annotations for `legacy`, and uses score-loss-based
 classification annotations for `compact`.
 
+Compact classification combines estimated score loss and winrate impact. Large
+technical losses with little winrate impact are shown as `Missed opportunity`
+rather than direct mistakes. In Sabaki, best/excellent moves use the blue
+interesting marker, great/good moves use the green good marker, doubtful moves
+use the doubtful marker, and real mistakes use bad/hotspot markers.
+
 If you hover your mouse over a proposed variation in Sabaki, the sequence of
 the variation is automatically played as shown in the screenshot above.
 

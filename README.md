@@ -189,6 +189,11 @@ generated: [제22회 농심배 12국, 2021-02-24] 이치리키 료 vs 신진서 
 analyze-sgf -g 'commentStyle:"compact",language:"fr"' baduk.sgf
 ```
 
+`compact` 평가는 예상 집 손실과 승률 영향을 함께 사용합니다. 집 손실은 크지만 승률 영향이
+작은 수는 직접적인 실수가 아니라 `Occasion manquée`/`Missed opportunity`로 표시됩니다.
+사바키에서는 최선/훌륭한 수는 파란색 interesting 마커, 좋은 수는 초록색 good 마커,
+의심스러운 수는 doubtful 마커, 실제 실수는 bad/hotspot 마커를 사용합니다.
+
 사바키에서 색깔이 검게 반전된 변화도 수순 위에 마우스를 올리면 위의 스크린숏처럼 자동으로
 수순이 진행됩니다.
 

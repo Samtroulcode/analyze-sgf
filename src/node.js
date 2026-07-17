@@ -180,10 +180,10 @@ function setClassificationAnnotations(that) {
   const category = that.classification && that.classification.category;
 
   if (category === 'best' || category === 'excellent') {
-    that.node = sgfconv.toGoodNode(that.node);
-  } else if (category === 'great') {
     that.node = sgfconv.toInterestingNode(that.node);
-  } else if (category === 'inaccuracy') {
+  } else if (category === 'great' || category === 'good') {
+    that.node = sgfconv.toGoodNode(that.node);
+  } else if (category === 'inaccuracy' || category === 'missedOpportunity') {
     that.node = sgfconv.toDoubtfulNode(that.node);
   } else if (category === 'blunder') {
     that.node = sgfconv.toBadHotSpot(that.node);
