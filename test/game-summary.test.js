@@ -32,7 +32,7 @@ function responses() {
     ],
   })}\n${JSON.stringify({
     turnNumber: 2,
-    rootInfo: { winrate: 0.7, scoreLead: 4.1, visits: 30 },
+    rootInfo: { winrate: 0.6, scoreLead: 4.1, visits: 30 },
     moveInfos: [],
   })}\n`;
 }

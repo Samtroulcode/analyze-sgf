@@ -94,6 +94,9 @@ describe('GameTree', () => {
     assert.deepEqual(gametree.nodes[0].classification, {
       category: 'good',
       scoreLoss: 1,
+      winrateLoss: 1,
+      scoreCategory: 'good',
+      winrateCategory: 'excellent',
       severity: 3,
       isTopChoice: false,
     });
@@ -116,10 +119,14 @@ describe('GameTree', () => {
     assert.deepEqual(gametree.nodes[0].classification, {
       category: 'best',
       scoreLoss: 0,
+      winrateLoss: 0,
+      scoreCategory: 'best',
+      winrateCategory: 'best',
       severity: 0,
       isTopChoice: true,
     });
     assert(gametree.getSGF().indexOf('Estimated loss: 0.0 points') !== -1);
+    assert(gametree.getSGF().indexOf('Victory impact: -0.0%') !== -1);
   });
 
   it('should classify white move loss from moveInfos perspective.', () => {
@@ -145,6 +152,9 @@ describe('GameTree', () => {
     assert.deepEqual(gametree.nodes[1].classification, {
       category: 'good',
       scoreLoss: 1.2,
+      winrateLoss: 0,
+      scoreCategory: 'good',
+      winrateCategory: 'excellent',
       severity: 3,
       isTopChoice: false,
     });
@@ -202,6 +212,7 @@ describe('GameTree', () => {
 
     assert(sgf.indexOf('Move 1 - Black - Best') !== -1);
     assert(sgf.indexOf('Estimated loss: 0.0 points') !== -1);
+    assert(sgf.indexOf('Victory impact: -0.0%') !== -1);
     assert(sgf.indexOf('Best choice: A19') !== -1);
   });
 

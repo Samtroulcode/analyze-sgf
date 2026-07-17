@@ -270,6 +270,11 @@ classification:
   goodMaxScoreLoss: 1.2
   inaccuracyMaxScoreLoss: 4.0
   mistakeMaxScoreLoss: 10.0
+  excellentMaxWinrateLoss: 1.0
+  greatMaxWinrateLoss: 3.0
+  goodMaxWinrateLoss: 7.0
+  inaccuracyMaxWinrateLoss: 15.0
+  mistakeMaxWinrateLoss: 30.0
 
 summary:
   enabled: true

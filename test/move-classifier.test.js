@@ -1,4 +1,4 @@
-/* eslint max-lines-per-function: ["error", 150] */
+/* eslint max-lines: ["error", 190], max-lines-per-function: ["error", 190] */
 
 const assert = require('assert');
 
@@ -11,11 +11,11 @@ describe('classifyMove', () => {
   it('should classify each category.', () => {
     assert.equal(classify(0, 0).category, 'best');
     assert.equal(classify(0, 1).category, 'excellent');
-    assert.equal(classify(0.3, 0).category, 'great');
-    assert.equal(classify(0.9, 0).category, 'good');
-    assert.equal(classify(2, 0).category, 'inaccuracy');
-    assert.equal(classify(7, 0).category, 'mistake');
-    assert.equal(classify(11, 0).category, 'blunder');
+    assert.equal(classify(0.3, 1).category, 'great');
+    assert.equal(classify(0.9, 1).category, 'good');
+    assert.equal(classify(2, 1).category, 'inaccuracy');
+    assert.equal(classify(7, 1).category, 'mistake');
+    assert.equal(classify(11, 1).category, 'blunder');
   });
 
   it('should classify exact category boundaries.', () => {
@@ -37,7 +37,7 @@ describe('classifyMove', () => {
   });
 
   it('should classify just after category boundaries.', () => {
-    assert.equal(classify(0.051, 0).category, 'excellent');
+    assert.equal(classify(0.051, 1).category, 'excellent');
     assert.equal(classify(0.201, 1).category, 'great');
     assert.equal(classify(0.601, 1).category, 'good');
     assert.equal(classify(1.201, 1).category, 'inaccuracy');
@@ -49,6 +49,9 @@ describe('classifyMove', () => {
     assert.deepEqual(classify(-3, 0), {
       category: 'best',
       scoreLoss: 0,
+      winrateLoss: 0,
+      scoreCategory: 'best',
+      winrateCategory: 'best',
       severity: 0,
       isTopChoice: true,
     });
@@ -58,9 +61,42 @@ describe('classifyMove', () => {
     assert.deepEqual(classify(0, 1), {
       category: 'excellent',
       scoreLoss: 0,
+      winrateLoss: null,
+      scoreCategory: 'excellent',
+      winrateCategory: null,
       severity: 1,
       isTopChoice: false,
     });
+  });
+
+  it('should use the most severe score or winrate category.', () => {
+    assert.deepEqual(
+      classifyMove({ scoreDrop: 1, winrateDrop: 20, rawChoiceRank: 2 }),
+      {
+        category: 'mistake',
+        scoreLoss: 1,
+        winrateLoss: 20,
+        scoreCategory: 'good',
+        winrateCategory: 'mistake',
+        severity: 5,
+        isTopChoice: false,
+      },
+    );
+  });
+
+  it('should keep top choice as best despite winrate noise.', () => {
+    assert.deepEqual(
+      classifyMove({ scoreDrop: 0, winrateDrop: 20, rawChoiceRank: 0 }),
+      {
+        category: 'best',
+        scoreLoss: 0,
+        winrateLoss: 0,
+        scoreCategory: 'best',
+        winrateCategory: 'best',
+        severity: 0,
+        isTopChoice: true,
+      },
+    );
   });
 
   it('should return null classification for invalid scoreDrop.', () => {
@@ -68,6 +104,9 @@ describe('classifyMove', () => {
       assert.deepEqual(classify(scoreDrop, 0), {
         category: null,
         scoreLoss: null,
+        winrateLoss: null,
+        scoreCategory: null,
+        winrateCategory: null,
         severity: null,
         isTopChoice: true,
       });
@@ -77,7 +116,7 @@ describe('classifyMove', () => {
   it('should detect top choice only from rawChoiceRank zero.', () => {
     assert.equal(classify(0.04, 0).category, 'best');
     assert.equal(classify(0.05, 0).category, 'best');
-    assert.equal(classify(0.051, 0).category, 'excellent');
+    assert.equal(classify(0.051, 0).category, 'best');
     assert.equal(classify(0, -1).isTopChoice, false);
     assert.equal(classify(0).isTopChoice, false);
   });

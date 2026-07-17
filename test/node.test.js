@@ -38,6 +38,9 @@ describe('Node.setWinrate', () => {
     assert.deepEqual(node.classification, {
       category: null,
       scoreLoss: null,
+      winrateLoss: null,
+      scoreCategory: null,
+      winrateCategory: null,
       severity: null,
       isTopChoice: false,
     });
@@ -61,6 +64,9 @@ describe('Node.setWinrate', () => {
     assert.deepEqual(node.classification, {
       category: 'excellent',
       scoreLoss: 0,
+      winrateLoss: 0,
+      scoreCategory: 'excellent',
+      winrateCategory: 'excellent',
       severity: 1,
       isTopChoice: false,
     });
@@ -81,7 +87,7 @@ describe('Node.setWinrate', () => {
 });
 
 describe('Node classification', () => {
-  it('should classify by scoreDrop, not winrate annotations.', () => {
+  it('should combine score loss and winrate impact.', () => {
     const node = new Node(';B[aa]');
     const previnfo = { winrate: 0.9, scoreLead: 0, visits: 1000 };
     const currinfo = { winrate: 0.69, scoreLead: -0.1, visits: 1000 };
@@ -89,9 +95,12 @@ describe('Node classification', () => {
     node.setWinrate(previnfo, currinfo, sgfopts);
 
     assert.deepEqual(node.classification, {
-      category: 'excellent',
+      category: 'mistake',
       scoreLoss: 0.1,
-      severity: 1,
+      winrateLoss: 21,
+      scoreCategory: 'excellent',
+      winrateCategory: 'mistake',
+      severity: 5,
       isTopChoice: false,
     });
     assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
@@ -108,6 +117,9 @@ describe('Node classification', () => {
     assert.deepEqual(node.classification, {
       category: 'best',
       scoreLoss: 0.04,
+      winrateLoss: 0,
+      scoreCategory: 'best',
+      winrateCategory: 'best',
       severity: 0,
       isTopChoice: true,
     });
@@ -191,6 +203,7 @@ describe('Node.getSGF', () => {
       node.getSGF(),
       ';B[aa]C[Move 1 - Black - Best\n\n' +
         'Estimated loss: 0.0 points\n' +
+        'Victory impact: -0.0%\n' +
         'Played move: A19\n' +
         'KataGo choice: #1\n\n' +
         'Winrate: Black 51.00%\n' +
@@ -238,7 +251,7 @@ describe('Node SGF annotations', () => {
       sgfopts,
     );
 
-    assert.equal(node.classification.category, 'inaccuracy');
+    assert.equal(node.classification.category, 'mistake');
     assert.equal(node.node, ';B[aa]BM[1]HO[1]SBKV[69.00]');
   });
 
@@ -259,13 +272,13 @@ describe('Node SGF annotations', () => {
     const node = new Node(';B[aa]');
 
     node.setWinrate(
-      { winrate: 0.9, scoreLead: 0, visits: 1000 },
-      { winrate: 0.69, scoreLead: -2, visits: 1000 },
+      { winrate: 0.7, scoreLead: 0, visits: 1000 },
+      { winrate: 0.6, scoreLead: -2, visits: 1000 },
       compactOpts('en'),
     );
 
     assert.equal(node.classification.category, 'inaccuracy');
-    assert.equal(node.node, ';B[aa]DO[1]SBKV[69.00]');
+    assert.equal(node.node, ';B[aa]DO[1]SBKV[60.00]');
   });
 
   it('should mark compact mistakes from score-based classification.', () => {
@@ -400,6 +413,9 @@ describe('Tail.getSGF', () => {
     assert.deepEqual(tail.classification, {
       category: 'best',
       scoreLoss: 0,
+      winrateLoss: 0,
+      scoreCategory: 'best',
+      winrateCategory: 'best',
       severity: 0,
       isTopChoice: true,
     });
@@ -420,6 +436,7 @@ describe('Tail.getSGF', () => {
       tail.getSGF(),
       ';B[aa]C[Coup 1 - Noir - Meilleur\n\n' +
         'Perte estimée: 0.0 points\n' +
+        'Impact victoire: -0.0%\n' +
         'Coup joué: A19\n' +
         'Meilleur choix: A19\n' +
         'Choix KataGo: #1\n\n' +

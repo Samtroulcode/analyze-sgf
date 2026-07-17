@@ -29,6 +29,10 @@ class Tail extends Node {
             this.moveInfoScoreLoss === undefined
               ? this.scoreDrop
               : this.moveInfoScoreLoss,
+          winrateDrop:
+            this.winrateDrop === undefined
+              ? undefined
+              : this.winrateDrop * 100,
           rawChoiceRank: this.rawChoiceRank,
         },
         classificationOpts,

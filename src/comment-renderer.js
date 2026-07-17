@@ -22,6 +22,7 @@ function renderCompactNode(node) {
     heading,
     '',
     `${translate(language, 'estimatedLoss')}: ${formatScoreLoss(node)}`,
+    `${translate(language, 'victoryImpact')}: ${formatWinrateLoss(node)}`,
     `${translate(language, 'playedMove')}: ${firstMove(node.node, node)}`,
     compactBestChoice(node, language),
     compactKataGoChoice(node, language),
@@ -68,6 +69,11 @@ function compactVariations(node) {
 function formatScoreLoss(node) {
   const loss = node.classification && node.classification.scoreLoss;
   return loss === null ? '-' : `${scoreFloat(loss)} points`;
+}
+
+function formatWinrateLoss(node) {
+  const loss = node.classification && node.classification.winrateLoss;
+  return loss === null ? '-' : `-${scoreFloat(loss)}%`;
 }
 
 function formatWinrate(node, language) {

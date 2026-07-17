@@ -3,7 +3,8 @@
  *               Please see <https://homepages.cwi.nl/~aeb/go/misc/sgf.html>.
  */
 
-/* eslint no-param-reassign: ["error", { "props": false }] */
+/* eslint no-param-reassign: ["error", { "props": false }],
+  max-lines: ["error", 220] */
 
 const sgfconv = require('./sgfconv');
 const { renderCompactNode } = require('./comment-renderer');
@@ -94,6 +95,7 @@ function setClassification(that, opts) {
   that.classification = classifyMove(
     {
       scoreDrop: classificationScoreDrop(that),
+      winrateDrop: classificationWinrateDrop(that),
       rawChoiceRank: that.rawChoiceRank,
     },
     opts && opts.classification,
@@ -104,6 +106,10 @@ function classificationScoreDrop(that) {
   return that.moveInfoScoreLoss === undefined
     ? that.scoreDrop
     : that.moveInfoScoreLoss;
+}
+
+function classificationWinrateDrop(that) {
+  return that.winrateDrop === undefined ? undefined : that.winrateDrop * 100;
 }
 
 const float = (f) => parseFloat(f).toFixed(2);

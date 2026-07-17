@@ -68,9 +68,9 @@ sgf:
   fileSuffix: "-analyzed"
 
 # Options for readable move classification.
-# Classification is based on estimated score loss, not winrate loss.
-# The first raw KataGo choice can be classified as best; other zero-loss moves
-# are excellent. Threshold values are points lost by the player who moved.
+# Classification combines estimated score loss and winrate loss. The final
+# category is the more severe of both signals. The first raw KataGo choice is
+# always best to avoid penalizing search noise between consecutive root infos.
 classification:
   enabled: true
   # Top raw KataGo choice with at most this score loss.
@@ -85,6 +85,12 @@ classification:
   inaccuracyMaxScoreLoss: 4.0
   # Large loss. Anything above this is a blunder.
   mistakeMaxScoreLoss: 10.0
+  # Winrate-loss thresholds are percentage points lost by the player who moved.
+  excellentMaxWinrateLoss: 1.0
+  greatMaxWinrateLoss: 3.0
+  goodMaxWinrateLoss: 7.0
+  inaccuracyMaxWinrateLoss: 15.0
+  mistakeMaxWinrateLoss: 30.0
 
 # Options for readable game summaries.
 summary:
