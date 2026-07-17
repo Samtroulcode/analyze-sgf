@@ -1,4 +1,4 @@
-/* eslint max-lines-per-function: ["error", 120] */
+/* eslint max-lines: ["error", 200], max-lines-per-function: ["error", 140] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -112,6 +112,25 @@ describe('GameTree', () => {
     const gametree = new GameTree('(;B[dd])', responses, sgfopts);
 
     assert.equal(gametree.nodes[0].rawChoiceRank, -1);
+  });
+
+  it('should use propagated custom classification thresholds.', () => {
+    const gopts = {
+      ...sgfopts,
+      classification: { goodMaxScoreLoss: 2.0 },
+    };
+    const responses = `${JSON.stringify({
+      turnNumber: 0,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [{ pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 1 }],
+    })}\n${JSON.stringify({
+      turnNumber: 1,
+      rootInfo: { winrate: 0.49, scoreLead: -1.5, visits: 10 },
+      moveInfos: [],
+    })}\n`;
+    const gametree = new GameTree('(;B[aa])', responses, gopts);
+
+    assert.equal(gametree.nodes[0].classification.category, 'good');
   });
 
   it('should be expected values for "t-sabaki-1-default.sgf".', () => {

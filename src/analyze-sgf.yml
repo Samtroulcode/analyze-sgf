@@ -24,6 +24,11 @@ analysis:
 
 # Options for making reviewed SGF files.
 sgf:
+  # Comment format. Currently only legacy is rendered. compact and detailed
+  # will be added by future readable review renderers.
+  commentStyle: "legacy"
+  # Comment language for future readable review renderers.
+  language: "en"
   # SGF can put good/bad/hotspot labels on moves for coloring game tree.
   # When you open reviewed SGF in applications like Sabaki, you can check
   # them. Please visit <https://sabaki.yichuanshen.de/>.
@@ -51,3 +56,18 @@ sgf:
   # If input file is "baduk.sgf" and fileSuffix is "-analyzed", then writes
   # analysis to "baduk-analyzed.sgf"
   fileSuffix: "-analyzed"
+
+# Options for readable move classification.
+classification:
+  enabled: true
+  bestMaxScoreLoss: 0.05
+  excellentMaxScoreLoss: 0.2
+  greatMaxScoreLoss: 0.6
+  goodMaxScoreLoss: 1.2
+  inaccuracyMaxScoreLoss: 4.0
+  mistakeMaxScoreLoss: 10.0
+
+# Options for future readable game summaries.
+summary:
+  enabled: true
+  maxKeyMoments: 5

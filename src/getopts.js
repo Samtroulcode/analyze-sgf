@@ -32,7 +32,7 @@ function getopts() {
 
   // Reads 7 keys from args.
   const args = parseArgs();
-  // Merges 3 keys with YAML conf.
+  // Merges 5 keys with YAML conf.
   const yml = readConfig(args.katago, args.analysis, args.sgf);
 
   if (args.jsonGiven && args.saveGiven) {
@@ -56,6 +56,8 @@ function getopts() {
 
   // Add boardYSize to sgf opts for coordinate conversion
   opts.sgf.boardYSize = opts.analysis.boardYSize;
+  opts.sgf.classification = opts.classification;
+  opts.sgf.summary = opts.summary;
   return opts;
 }
 
@@ -112,6 +114,8 @@ function readConfig(kopts, aopts, sopts) {
   const katago = { ...opts.katago, ...kopts };
   const analysis = { ...opts.analysis, ...aopts };
   const sgf = { ...opts.sgf, ...sopts };
+  const classification = { ...opts.classification };
+  const summary = { ...opts.summary };
 
   sgf.analyzeTurns = analysis.analyzeTurns;
 
@@ -129,7 +133,7 @@ function readConfig(kopts, aopts, sopts) {
     sgf.minWinrateDropForVariations = sgf.minWinrateLossForVariations;
   }
 
-  return { katago, analysis, sgf };
+  return { katago, analysis, sgf, classification, summary };
 }
 
 module.exports = getopts;
