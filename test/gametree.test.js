@@ -1,4 +1,4 @@
-/* eslint max-lines-per-function: ["error", 100] */
+/* eslint max-lines-per-function: ["error", 120] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -71,6 +71,41 @@ describe('GameTree', () => {
     const gametree = new GameTree('(;SZ[9];B[bb])', responses, sgfopts);
 
     assert(gametree.getSGF().indexOf('1. A9') !== -1);
+  });
+
+  it('should expose raw KataGo choice rank before filtering.', () => {
+    const gopts = { ...sgfopts, maxVariationsForEachMove: 1 };
+    const responses = `${JSON.stringify({
+      turnNumber: 0,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [
+        { pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 1, visits: 10 },
+        { pv: ['C3', 'D4'], winrate: 0.52, scoreLead: 2, visits: 9 },
+      ],
+    })}\n${JSON.stringify({
+      turnNumber: 1,
+      rootInfo: { winrate: 0.49, scoreLead: -1, visits: 10 },
+      moveInfos: [],
+    })}\n`;
+    const gametree = new GameTree('(;B[cc])', responses, gopts);
+
+    assert.equal(gametree.nodes[0].rawChoiceRank, 1);
+    assert.equal(gametree.nodes[0].choice, -1);
+    assert.equal(gametree.getSGF().indexOf('* KataGo choice'), -1);
+  });
+
+  it('should expose -1 when played move is absent from raw choices.', () => {
+    const responses = `${JSON.stringify({
+      turnNumber: 0,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [
+        { pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 1, visits: 10 },
+        { pv: ['C3', 'D4'], winrate: 0.52, scoreLead: 2, visits: 9 },
+      ],
+    })}\n`;
+    const gametree = new GameTree('(;B[dd])', responses, sgfopts);
+
+    assert.equal(gametree.nodes[0].rawChoiceRank, -1);
   });
 
   it('should be expected values for "t-sabaki-1-default.sgf".', () => {

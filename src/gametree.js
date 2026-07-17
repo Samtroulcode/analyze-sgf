@@ -3,7 +3,8 @@
  *               Please see <https://homepages.cwi.nl/~aeb/go/misc/sgf.html>.
  */
 
-/* eslint no-param-reassign: ["error", { "props": false }] */
+/* eslint no-param-reassign: ["error", { "props": false }],
+  max-lines: ["error", 260], max-lines-per-function: ["error", 80] */
 
 const sgfconv = require('./sgfconv');
 const katagoconv = require('./katagoconv');
@@ -123,6 +124,11 @@ function setWinrateAndVariatons(that, katagoResponses, pls) {
         that.nodes[nextTurn].setVariations(
           variationsFromResponse(that, curJSON, nextPL, nextTurn),
           that.opts.boardYSize,
+          rawChoiceRankFromMoveInfos(
+            curJSON.moveInfos,
+            nextPL,
+            that.nodes[nextTurn].node,
+          ),
         );
 
       return {
@@ -195,6 +201,19 @@ function variationsFromResponse(that, response, pl, turn) {
         that.opts.showBadVariations === true ||
         that.opts.maxWinrateDropForGoodMove / 100 > v.winrateDrop,
     );
+}
+
+function rawChoiceRankFromMoveInfos(moveInfos, pl, node) {
+  return moveInfos
+    .map((moveInfo) => firstNodeFromMoveInfo(pl, moveInfo))
+    .indexOf(node.substring(1));
+}
+
+function firstNodeFromMoveInfo(pl, moveInfo) {
+  const match = katagoconv
+    .seqFromKataGoMoveInfo(pl, moveInfo)
+    .match(/;([BW]\[[^\]]*\])/);
+  return match ? match[1] : '';
 }
 
 // Sets the report of the game and each node.

@@ -9,8 +9,9 @@ const Node = require('./node');
 // Carries a SGF Tail.
 class Tail extends Node {
   // Sets a NodeSeq array to carry the variations.
-  setVariations(variations, boardYSize) {
+  setVariations(variations, boardYSize, rawChoiceRank) {
     this.variations = variations;
+    this.rawChoiceRank = rawChoiceRank;
     if (this.hasVariation())
       this.pvs = `The proposed variations\n\n${this.variations.reduce(
         (acc, cur, index) =>
