@@ -71,7 +71,7 @@ classification:
   inaccuracyMaxScoreLoss: 4.0
   mistakeMaxScoreLoss: 10.0
 
-# Options for future readable game summaries.
+# Options for readable game summaries.
 summary:
   enabled: true
   maxKeyMoments: 5

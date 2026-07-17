@@ -11,6 +11,7 @@ const katagoconv = require('./katagoconv');
 const Tail = require('./tail');
 const NodeSeq = require('./nodeseq');
 const GameReport = require('./game-report');
+const { renderGameSummary } = require('./game-summary');
 
 // Carries a SGF RootNode (this.root) and Tail array (this.nodes).
 class GameTree {
@@ -223,7 +224,7 @@ function setReports(that) {
 
   // Game report for root comment.
   const r = new GameReport(that);
-  that.root.C = [r.reportGame()];
+  that.root.C = [renderGameSummary(that) || r.reportGame()];
 
   // 'Bad moves left' report for each node.
   that.nodes.forEach((node, i) => node.setReport(r.reportBadsLeft(i)));
