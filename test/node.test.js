@@ -1,3 +1,5 @@
+/* eslint max-lines: ["error", 260], max-lines-per-function: ["error", 70] */
+
 const fs = require('fs');
 const assert = require('assert');
 const yaml = require('js-yaml');
@@ -207,7 +209,7 @@ describe('Tail.getSGF', () => {
     assert(tail.getSGF().indexOf('* KataGo top choice\n') !== -1);
   });
 
-  it('should not render a KataGo choice when absent from shown variations.', () => {
+  it('should not render a choice when absent from shown variations.', () => {
     const tail = new Tail(';B[cc]', 'Move 1');
 
     tail.setVariations([makeVariation('(;B[aa];W[bb])', 0.51, 100)], 19);
