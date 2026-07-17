@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 220], max-lines-per-function: ["error", 160] */
+/* eslint max-lines: ["error", 280], max-lines-per-function: ["error", 220] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -79,8 +79,8 @@ describe('GameTree', () => {
       turnNumber: 0,
       rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
       moveInfos: [
-        { pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 1, visits: 10 },
-        { pv: ['C3', 'D4'], winrate: 0.52, scoreLead: 2, visits: 9 },
+        { pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 2, visits: 10 },
+        { pv: ['C3', 'D4'], winrate: 0.52, scoreLead: 1, visits: 9 },
       ],
     })}\n${JSON.stringify({
       turnNumber: 1,
@@ -98,6 +98,56 @@ describe('GameTree', () => {
       isTopChoice: false,
     });
     assert.equal(gametree.getSGF().indexOf('* KataGo choice'), -1);
+  });
+
+  it('should classify KataGo top choice as zero loss from moveInfos.', () => {
+    const gopts = { ...sgfopts, commentStyle: 'compact', language: 'en' };
+    const responses = `${JSON.stringify({
+      turnNumber: 0,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [{ pv: ['A1'], winrate: 0.51, scoreLead: 1 }],
+    })}\n${JSON.stringify({
+      turnNumber: 1,
+      rootInfo: { winrate: 0.51, scoreLead: 0.36, visits: 10 },
+      moveInfos: [],
+    })}\n`;
+    const gametree = new GameTree('(;B[aa])', responses, gopts);
+
+    assert.deepEqual(gametree.nodes[0].classification, {
+      category: 'best',
+      scoreLoss: 0,
+      severity: 0,
+      isTopChoice: true,
+    });
+    assert(gametree.getSGF().indexOf('Estimated loss: 0.0 points') !== -1);
+  });
+
+  it('should classify white move loss from moveInfos perspective.', () => {
+    const responses = `${JSON.stringify({
+      turnNumber: 0,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [],
+    })}\n${JSON.stringify({
+      turnNumber: 1,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [
+        { pv: ['A1'], winrate: 0.49, scoreLead: -2 },
+        { pv: ['B2'], winrate: 0.5, scoreLead: -0.8 },
+      ],
+    })}\n${JSON.stringify({
+      turnNumber: 2,
+      rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
+      moveInfos: [],
+    })}\n`;
+    const gametree = new GameTree('(;B[aa];W[bb])', responses, sgfopts);
+
+    assert.equal(gametree.nodes[1].rawChoiceRank, 1);
+    assert.deepEqual(gametree.nodes[1].classification, {
+      category: 'good',
+      scoreLoss: 1.2,
+      severity: 3,
+      isTopChoice: false,
+    });
   });
 
   it('should expose -1 when played move is absent from raw choices.', () => {
@@ -122,13 +172,16 @@ describe('GameTree', () => {
     const responses = `${JSON.stringify({
       turnNumber: 0,
       rootInfo: { winrate: 0.5, scoreLead: 0, visits: 10 },
-      moveInfos: [{ pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 1 }],
+      moveInfos: [
+        { pv: ['A1', 'B2'], winrate: 0.51, scoreLead: 2 },
+        { pv: ['B2', 'C3'], winrate: 0.5, scoreLead: 0.5 },
+      ],
     })}\n${JSON.stringify({
       turnNumber: 1,
       rootInfo: { winrate: 0.49, scoreLead: -1.5, visits: 10 },
       moveInfos: [],
     })}\n`;
-    const gametree = new GameTree('(;B[aa])', responses, gopts);
+    const gametree = new GameTree('(;B[bb])', responses, gopts);
 
     assert.equal(gametree.nodes[0].classification.category, 'good');
   });
@@ -148,7 +201,7 @@ describe('GameTree', () => {
     const sgf = gametree.getSGF();
 
     assert(sgf.indexOf('Move 1 - Black - Best') !== -1);
-    assert(sgf.indexOf('Estimated loss: 0.00 points') !== -1);
+    assert(sgf.indexOf('Estimated loss: 0.0 points') !== -1);
     assert(sgf.indexOf('Best choice: A19') !== -1);
   });
 

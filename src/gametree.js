@@ -4,7 +4,7 @@
  */
 
 /* eslint no-param-reassign: ["error", { "props": false }],
-  max-lines: ["error", 260], max-lines-per-function: ["error", 80] */
+  max-lines: ["error", 280], max-lines-per-function: ["error", 80] */
 
 const sgfconv = require('./sgfconv');
 const katagoconv = require('./katagoconv');
@@ -122,16 +122,7 @@ function setWinrateAndVariatons(that, katagoResponses, pls) {
         (!that.opts.analyzeTurns ||
           that.opts.analyzeTurns.indexOf(nextTurn) !== -1)
       )
-        that.nodes[nextTurn].setVariations(
-          variationsFromResponse(that, curJSON, nextPL, nextTurn),
-          that.opts.boardYSize,
-          rawChoiceRankFromMoveInfos(
-            curJSON.moveInfos,
-            nextPL,
-            that.nodes[nextTurn].node,
-          ),
-          that.opts.classification,
-        );
+        setNodeVariations(that, curJSON, nextPL, nextTurn);
 
       return {
         prevJSON: curJSON,
@@ -141,6 +132,21 @@ function setWinrateAndVariatons(that, katagoResponses, pls) {
     { prevJSON: null, maxVisits: 0 },
   ).maxVisits;
   // FIXME: Remove passing move if has no variation.
+}
+
+function setNodeVariations(that, curJSON, nextPL, nextTurn) {
+  const rawChoiceRank = rawChoiceRankFromMoveInfos(
+    curJSON.moveInfos,
+    nextPL,
+    that.nodes[nextTurn].node,
+  );
+  that.nodes[nextTurn].setVariations(
+    variationsFromResponse(that, curJSON, nextPL, nextTurn),
+    that.opts.boardYSize,
+    rawChoiceRank,
+    scoreLossFromMoveInfos(curJSON.moveInfos, nextPL, rawChoiceRank),
+    that.opts.classification,
+  );
 }
 
 // '{"id":"Q","isDuringSearch..."turnNumber":3}' => 3
@@ -216,6 +222,21 @@ function firstNodeFromMoveInfo(pl, moveInfo) {
     .seqFromKataGoMoveInfo(pl, moveInfo)
     .match(/;([BW]\[[^\]]*\])/);
   return match ? match[1] : '';
+}
+
+function scoreLossFromMoveInfos(moveInfos, pl, rank) {
+  if (rank < 0 || !moveInfos[0] || !moveInfos[rank]) return undefined;
+
+  const bestScore = moveInfos[0].scoreLead;
+  const playedScore = moveInfos[rank].scoreLead;
+  if (!Number.isFinite(bestScore) || !Number.isFinite(playedScore)) {
+    return undefined;
+  }
+
+  return Math.max(
+    0,
+    pl === 'W' ? playedScore - bestScore : bestScore - playedScore,
+  );
 }
 
 // Sets the report of the game and each node.

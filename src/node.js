@@ -92,9 +92,18 @@ function calcWinrate(that, prevInfo, curInfo) {
 
 function setClassification(that, opts) {
   that.classification = classifyMove(
-    { scoreDrop: that.scoreDrop, rawChoiceRank: that.rawChoiceRank },
+    {
+      scoreDrop: classificationScoreDrop(that),
+      rawChoiceRank: that.rawChoiceRank,
+    },
     opts && opts.classification,
   );
+}
+
+function classificationScoreDrop(that) {
+  return that.moveInfoScoreLoss === undefined
+    ? that.scoreDrop
+    : that.moveInfoScoreLoss;
 }
 
 const float = (f) => parseFloat(f).toFixed(2);

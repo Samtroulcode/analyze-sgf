@@ -26,7 +26,10 @@ function responses() {
   })}\n${JSON.stringify({
     turnNumber: 1,
     rootInfo: { winrate: 0.51, scoreLead: 0.1, visits: 20 },
-    moveInfos: [{ pv: ['B2'], winrate: 0.49, scoreLead: 0 }],
+    moveInfos: [
+      { pv: ['A1'], winrate: 0.49, scoreLead: -4 },
+      { pv: ['B2'], winrate: 0.49, scoreLead: 0 },
+    ],
   })}\n${JSON.stringify({
     turnNumber: 2,
     rootInfo: { winrate: 0.7, scoreLead: 4.1, visits: 30 },

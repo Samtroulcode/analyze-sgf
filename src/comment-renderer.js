@@ -6,6 +6,7 @@ const sgfconv = require('./sgfconv');
 const { categoryLabel, colorLabel, translate } = require('./comment-i18n');
 
 const float = (f) => parseFloat(f).toFixed(2);
+const scoreFloat = (f) => parseFloat(f).toFixed(1);
 
 function renderCompactNode(node) {
   const language = node.opts && node.opts.language;
@@ -66,7 +67,7 @@ function compactVariations(node) {
 
 function formatScoreLoss(node) {
   const loss = node.classification && node.classification.scoreLoss;
-  return loss === null ? '-' : `${float(loss)} points`;
+  return loss === null ? '-' : `${scoreFloat(loss)} points`;
 }
 
 function formatWinrate(node, language) {

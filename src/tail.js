@@ -11,13 +11,26 @@ const { classifyMove } = require('./move-classifier');
 // Carries a SGF Tail.
 class Tail extends Node {
   // Sets a NodeSeq array to carry the variations.
-  setVariations(variations, boardYSize, rawChoiceRank, classificationOpts) {
+  setVariations(
+    variations,
+    boardYSize,
+    rawChoiceRank,
+    moveInfoScoreLoss,
+    classificationOpts,
+  ) {
     this.variations = variations;
     this.rawChoiceRank = rawChoiceRank;
+    this.moveInfoScoreLoss = moveInfoScoreLoss;
     this.opts = { ...this.opts, boardYSize };
     if (this.classification)
       this.classification = classifyMove(
-        { scoreDrop: this.scoreDrop, rawChoiceRank: this.rawChoiceRank },
+        {
+          scoreDrop:
+            this.moveInfoScoreLoss === undefined
+              ? this.scoreDrop
+              : this.moveInfoScoreLoss,
+          rawChoiceRank: this.rawChoiceRank,
+        },
         classificationOpts,
       );
     if (this.hasVariation())

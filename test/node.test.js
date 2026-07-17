@@ -1,4 +1,4 @@
-/* eslint max-lines: ["error", 430], max-lines-per-function: ["error", 110] */
+/* eslint max-lines: ["error", 450], max-lines-per-function: ["error", 120] */
 
 const fs = require('fs');
 const assert = require('assert');
@@ -190,7 +190,7 @@ describe('Node.getSGF', () => {
     assert.equal(
       node.getSGF(),
       ';B[aa]C[Move 1 - Black - Best\n\n' +
-        'Estimated loss: 0.00 points\n' +
+        'Estimated loss: 0.0 points\n' +
         'Played move: A19\n' +
         'KataGo choice: #1\n\n' +
         'Winrate: Black 51.00%\n' +
@@ -390,11 +390,16 @@ describe('Tail.getSGF', () => {
     );
     assert.equal(tail.classification.category, 'excellent');
 
-    tail.setVariations([makeVariation('(;B[aa];W[bb])', 0.51, 100)], 19, 0);
+    tail.setVariations(
+      [makeVariation('(;B[aa];W[bb])', 0.51, 100)],
+      19,
+      0,
+      0,
+    );
 
     assert.deepEqual(tail.classification, {
       category: 'best',
-      scoreLoss: 0.04,
+      scoreLoss: 0,
       severity: 0,
       isTopChoice: true,
     });
@@ -414,7 +419,7 @@ describe('Tail.getSGF', () => {
     assert.equal(
       tail.getSGF(),
       ';B[aa]C[Coup 1 - Noir - Meilleur\n\n' +
-        'Perte estimée: 0.00 points\n' +
+        'Perte estimée: 0.0 points\n' +
         'Coup joué: A19\n' +
         'Meilleur choix: A19\n' +
         'Choix KataGo: #1\n\n' +
